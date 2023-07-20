@@ -1,0 +1,465 @@
+---
+title: "Meta-Analysis"
+output: html_document
+date: "2023-07-14"
+---
+```{r message=FALSE}
+library("plyr")
+library("dplyr")
+library("tidyr")
+library("stringr")
+library("ggplot2")
+library("ggpubr")
+library("lme4") # for models
+library("sjPlot") # for models
+library("sjmisc") # for models
+library("MuMIn") # getting R squared from mixed models
+library("effects")
+library("ggeffects")
+library("lmerTest")
+library("metafor")
+library("meta")
+library("esc")
+library("purrr")
+```
+
+Notes
+- ALGAE: is anytime a study wasn't specific about what type of algae its talking about
+- Macroalgae: not CCA, not turf
+
+
+https://wviechtb.github.io/metafor/reference/robust.html
+https://bookdown.org/MathiasHarrer/Doing_Meta_Analysis_in_R/multilevel-ma.html
+https://www.metafor-project.org/doku.php/tips:forest_plot_with_aggregated_values
+http://www.metafor-project.org/doku.php/analyses:konstantopoulos2011 
+https://www.metafor-project.org/doku.php/tips:rma.uni_vs_rma.mv 
+
+
+
+# (1) Data Wrangling
+Full data
+```{r}
+data <- read.csv("../data/final_data_extracted.csv")
+View(data)
+
+# Create Metadata 
+test <- data %>% select(1:28) # filter out columns
+
+# Group by each study so we only have one row per study
+metadata <- test %>% 
+        group_by(unique_ID, last_name, year_published, region, 
+                 location, study_duration_mm, tile_conditioning_mm) %>% 
+        summarize(mean_herb_biomass = mean(herbivore_biomass_gm2))
+
+# Create a new variable of a study number for each unique id
+data[,"study_num"] <- NA
+data$study_num <- as.numeric( sub("\\D*(\\d+).*", "\\1", data$unique_ID) )
+```
+study_num column --> takes only the unique identifier numbers from the unique_ID column and stores in new column
+
+
+
+
+# (2) Calculate Effect Sizes
+
+```{r}
+##### Coral #####
+#################
+# Calculate effect size
+coral_effect_size.1 <- escalc(measure="SMD", m1i=coral_uncaged_mean, m2i=coral_caged_mean, 
+                            sd1i=coral_uncaged_SD, sd2i=coral_caged_SD, 
+                            n1i=coral_uncaged_n, n2i=coral_caged_n, 
+                            data=data, slab=paste(last_name, year_started, location, site, sep=", "))
+#Warning: Some 'yi' and/or 'vi' values equal to +-Inf. Recoded to NAs.
+
+# Select columns
+coral_effect_size.2 <- coral_effect_size.1 %>% 
+        select(c('unique_ID', 'paper', 'unique_ID_site', 'study_num', 'cluster_ID', 'coral_recruit_location', 'yi','vi', "herbivore_biomass_gm2", "study_duration_mm", "MPA_paper"))
+
+# Remove NA's
+coral_effect_size <- coral_effect_size.2 %>% 
+        subset(!is.na(yi)) %>%
+  mutate(esid=row_number()) 
+
+
+
+
+
+
+
+##### ALGAE #####
+#################
+ALGAE_effect_size.1 <- escalc(measure="SMD", m1i=ALGAE_uncaged_mean, m2i=ALGAE_caged_mean, 
+                            sd1i=ALGAE_uncaged_SD, sd2i=ALGAE_caged_SD, 
+                            n1i=ALGAE_uncaged_n, n2i=ALGAE_caged_n, 
+                            data=data, slab=paste(last_name, year_started, location, site, sep=", "))
+
+ALGAE_effect_size.2 <- ALGAE_effect_size.1 %>% select(c('unique_ID', 'paper', 'unique_ID_site', 'study_num', 'cluster_ID', 'yi','vi',"herbivore_biomass_gm2","study_duration_mm"))
+
+
+ALGAE_effect_size <- ALGAE_effect_size.2 %>% 
+        subset(!is.na(yi))%>%
+  mutate(esid=row_number())
+      
+
+
+
+##### Turf #####
+#################
+turf_effect_size.1 <- escalc(measure="SMD", m1i=turf_uncaged_mean, m2i=turf_caged_mean, 
+                           sd1i=turf_uncaged_SD, sd2i=turf_caged_SD, 
+                           n1i=turf_uncaged_n, n2i=turf_caged_n, 
+                           data=data, slab=paste(last_name, year_started, location, site, sep=", "))
+
+turf_effect_size.2 <- turf_effect_size.1 %>% select(c('unique_ID', 'paper', 'unique_ID_site','study_num', 'cluster_ID', 'turf_cluster_ID', 'yi','vi',"herbivore_biomass_gm2","study_duration_mm"))
+
+turf_effect_size <- turf_effect_size.2 %>% 
+        subset(!is.na(yi))%>%
+  mutate(esid=row_number()) 
+
+
+
+
+
+##### Macroalgae #####
+######################
+macroalgae_effect_size.1 <- escalc(measure="SMD", m1i=macroalgae_uncaged_mean, m2i=macroalgae_caged_mean,
+                                 sd1i=macroalgae_uncaged_SD, sd2i=macroalgae_caged_SD, 
+                                 n1i=macroalgae_uncaged_n, n2i=macroalgae_caged_n, 
+                                 data=data, slab=paste(last_name, year_started, location, site, sep=", "))
+
+macroalgae_effect_size.2 <- macroalgae_effect_size.1 %>% select(c('unique_ID', 'paper', 'unique_ID_site','study_num', 'cluster_ID', 'macro_cluster_ID', 'yi','vi',"herbivore_biomass_gm2","study_duration_mm"))
+
+macroalgae_effect_size <- macroalgae_effect_size.2 %>% 
+        subset(!is.na(yi)) %>%
+  mutate(esid=row_number())
+
+
+
+
+
+
+
+##### CCA #####
+###############
+CCA_effect_size.1 <- escalc(measure="SMD", m1i=CCA_uncaged_mean, m2i=CCA_caged_mean, 
+                          sd1i=CCA_uncaged_SD, sd2i=CCA_caged_SD, 
+                          n1i=CCA_uncaged_n, n2i=CCA_caged_n, 
+                          data=data, slab=paste(last_name, year_started, location, site, sep=", "))
+
+CCA_effect_size.2 <- CCA_effect_size.1 %>% select(c('unique_ID', 'paper', 'unique_ID_site', 'study_num', 'cluster_ID', 'yi','vi',"herbivore_biomass_gm2","study_duration_mm"))
+
+CCA_effect_size <- CCA_effect_size.2 %>% 
+        subset(!is.na(yi)) %>%
+  mutate(esid=row_number())
+
+
+
+
+
+
+##### Invertebrates #####
+#########################
+invertebrates_effect_size.1 <- escalc(measure="SMD", m1i=invertebrates_uncaged_mean, m2i=invertebrates_caged_mean, 
+                                    sd1i=invertebrates_uncaged_SD, sd2i=invertebrates_caged_SD, 
+                                    n1i=invertebrates_uncaged_n, n2i=invertebrates_caged_n, 
+                                    data=data, slab=paste(last_name, year_started, location, site, sep=", "))
+
+invertebrates_effect_size.2 <- invertebrates_effect_size.1 %>% select(c('unique_ID', 'paper', 'unique_ID_site', 'study_num', 'cluster_ID', 'inverts_cluster_ID', 'yi','vi',"herbivore_biomass_gm2","study_duration_mm"))
+
+invertebrates_effect_size <- invertebrates_effect_size.2 %>% 
+        subset(!is.na(yi))%>%
+  mutate(esid=row_number())
+```
+
+
+
+
+# (3) Models
+
+
+### Coral
+```{r}
+#### Multilevel model ####
+##########################
+# Random effects model 
+coral.multi <- rma.mv(yi, vi, random = ~ 1 | paper/esid, data = coral_effect_size, slab = paper)
+summary(coral.multi)
+# sigma 2.1= between paper heterogeneity
+# sigma 2.2= within paper heterogeneity
+
+# apply cluster robust inference methods 
+robust(coral.multi, cluster=paper, clubSandwich=TRUE)
+
+# with herbivore biomass as a predictor
+summary(rma.mv(yi, vi, mods= ~ herbivore_biomass_gm2, random = ~ 1 | paper/esid, data = coral_effect_size, slab = paper))
+
+
+# with MPA as a predictor
+summary(rma.mv(yi, vi, mods= ~ MPA_paper, random = ~ 1 | paper/esid, data = coral_effect_size, slab = paper))
+
+
+
+
+
+
+#### Forest Plot ####
+#####################
+# turn 'dat' into an 'escalc' object (and add study labels)
+class(coral_effect_size) # dataframe
+
+coral.escalc <- escalc(measure="SMD", yi=yi, vi=vi, 
+               data=coral_effect_size)
+class(coral.escalc) # escalc
+
+# Plot this model with aggregated data (one outcome per study)
+agg <- aggregate(coral.escalc, cluster=paper, V=vcov(coral.multi, type="obs"), addk=TRUE)
+
+res <- rma(yi, vi, method="EE", data=agg, digits=3)
+res
+# same results as the multilevel model above
+
+forest(res, mlab="Pooled Estimate", header=TRUE, ilab=ki, ilab.xpos=-2, slab=paper)
+text(-2, res$k+2, "Estimates", font=2)
+
+# Supp Figure
+png("../figures/coral-agg.png",width = 850, height = 600) 
+forest(res, mlab="Pooled Estimate", header=TRUE, ilab=ki, ilab.xpos=-2, slab=paper, cex=1.5)
+text(-2, res$k+2, "Estimates", font=2, cex=1.5)
+title(main="Coral",cex.main=1.5,font=2)
+dev.off()
+```
+
+
+
+
+### Algae
+Combined ALGAE and macroalgae into one dataframe
+```{r}
+#### Combine the data #####
+###########################
+dim(ALGAE_effect_size) #20  5
+dim(macroalgae_effect_size) #60  6
+
+full_algae_effect_size <- bind_rows(ALGAE_effect_size,macroalgae_effect_size)
+dim(full_algae_effect_size) #80  10
+
+
+#### Multilevel model ####
+##########################
+# Random effects model 
+algae.multi <- rma.mv(yi, vi, random = ~ 1 | paper/esid, data = full_algae_effect_size, slab = paper)
+summary(algae.multi)
+
+
+# apply cluster robust inference methods 
+robust(algae.multi, cluster=paper, clubSandwich=TRUE)
+
+
+# with herbivore biomass as a predictor
+summary(rma.mv(yi, vi, mods= ~ herbivore_biomass_gm2, random = ~ 1 | paper/esid, data = full_algae_effect_size,slab = paper)) # not significant
+
+
+
+#### Forest Plot ####
+#####################
+### turn 'dat' into an 'escalc' object (and add study labels)
+algae.escalc <- escalc(measure="SMD", yi=yi, vi=vi, 
+               data=full_algae_effect_size)
+class(algae.escalc) # escalc
+
+
+# Plot this model with aggregated data (one outcome per study)
+agg <- aggregate(algae.escalc, cluster=paper, V=vcov(algae.multi, type="obs"), addk=TRUE)
+View(agg)
+
+res <- rma(yi, vi, method="EE", data=agg, digits=3)
+res
+# same results as the multilevel model above
+
+forest(res, mlab="Pooled Estimate", header=TRUE, ilab=ki, ilab.xpos=-8, slab=paper)
+text(-2, res$k+2, "Estimates", font=2)
+
+# Supp Figure
+png("../figures/algae-agg.png",width = 850, height = 900) 
+forest(res, mlab="Pooled Estimate", 
+       header=TRUE, ilab=ki, ilab.xpos=-8, 
+       slab= paper, cex=1.5,xlab="Standardized Mean Difference")
+title("Algae", font=2, cex.main=1.5)
+text(-8, 29, "Estimates", font=2, cex=1.5)
+dev.off()
+
+```
+
+
+
+### Turf
+```{r}
+#### Multi-level model #####
+###########################
+turf.multi <- rma.mv(yi, vi, random = ~ 1 | paper/esid, data = turf_effect_size, slab = paper)
+summary(turf.multi)
+
+# apply cluster robust inference methods 
+robust(turf.multi, cluster=paper, clubSandwich=TRUE)
+
+
+
+
+
+#### Forest Plot ####
+#####################
+# Plot this model with aggregated data (one outcome per study)
+### turn 'dat' into an 'escalc' object (and add study labels)
+turf.escalc <- escalc(measure="SMD", yi=yi, vi=vi, 
+               data=turf_effect_size)
+class(turf.escalc) # escalc
+
+agg <- aggregate(turf.escalc, cluster=paper, V=vcov(turf.multi, type="obs"), addk=TRUE)
+View(agg)
+
+res <- rma(yi, vi, method="EE", data=agg, digits=3)
+res
+# same results as the multilevel model above
+
+forest(res, mlab="Pooled Estimate", header=TRUE, ilab=ki, ilab.xpos=-2, slab=paper)
+text(-2, res$k+2, "Estimates", font=2)
+
+# supp figure
+png("../figures/turf-agg.png",width = 890, height = 600) 
+forest(res,mlab="Pooled Estimate", header=TRUE, ilab=ki,ilab.xpos=-10, slab=paper, cex=1.5)
+title("Turf", font=2, cex.main=1.5)
+text(-10, 15, "Estimates", font=2, cex=1.5)
+dev.off()
+
+```
+
+
+### CCA
+```{r}
+#### Multi-level model #####
+###########################
+cca.multi <- rma.mv(yi, vi, random = ~ 1 | paper/esid, data = CCA_effect_size, slab = paper)
+summary(cca.multi)
+
+# apply cluster robust inference methods 
+robust(cca.multi, cluster=paper, clubSandwich=TRUE)
+
+
+
+#### Forest Plot ####
+#####################
+# Plot this model with aggregated data (one outcome per study)
+### turn 'dat' into an 'escalc' object (and add study labels)
+cca.escalc <- escalc(measure="SMD", yi=yi, vi=vi, 
+               data=CCA_effect_size)
+class(cca.escalc) # escalc
+
+agg <- aggregate(cca.escalc, cluster=paper, V=vcov(cca.multi, type="obs"), addk=TRUE)
+
+res <- rma(yi, vi, method="EE", data=agg, digits=3)
+res
+# same results as the multilevel model above
+
+forest(res, mlab="Pooled Estimate", header=TRUE, ilab=ki, ilab.xpos=-2, slab=paper)
+text(-2, res$k+2, "Estimates", font=2)
+
+
+
+# supp figure
+png("../figures/cca-agg.png",width = 890, height = 600) 
+forest(res,mlab="Pooled Estimate", header=TRUE, ilab=ki,ilab.xpos=-4, slab=paper, cex=1.5)
+title("CCA", font=2, cex.main=1.5)
+text(-4, 11, "Estimates", font=2, cex=1.5)
+dev.off()
+```
+
+
+
+### Invertebrates
+```{r}
+#### Multilevel model ####
+#####################
+inv.multi <- rma.mv(yi, vi, random = ~ 1 | paper/esid, data = invertebrates_effect_size,slab = paper)
+summary(inv.multi)
+
+# apply cluster robust inference methods 
+robust(inv.multi, cluster=paper, clubSandwich=TRUE)
+
+
+
+
+
+#### Forest Plot ####
+#####################
+# Plot this model with aggregated data (one outcome per study)
+### turn 'dat' into an 'escalc' object (and add study labels)
+inv.escalc <- escalc(measure="SMD", yi=yi, vi=vi, 
+               data=invertebrates_effect_size)
+class(inv.escalc) # escalc
+
+agg <- aggregate(inv.escalc, cluster=paper, V=vcov(inv.multi, type="obs"), addk=TRUE)
+
+res <- rma(yi, vi, method="EE", data=agg, digits=3)
+res
+# same results as the multilevel model above
+
+forest(res, mlab="Pooled Estimate", header=TRUE, ilab=ki, ilab.xpos=-9, slab=paper)
+text(-2, res$k+2, "Estimates", font=2)
+
+
+
+# supp figure
+png("../figures/inv-agg.png",width = 890, height = 600) 
+forest(res,mlab="Pooled Estimate", header=TRUE, ilab=ki,ilab.xpos=-9, slab=paper, cex=1.5)
+title("Invertebrates", font=2, cex.main=1.5)
+text(-9, 9, "Estimates", font=2, cex=1.5)
+dev.off()
+```
+
+
+
+
+
+
+
+# (4) Figures
+
+Pooled estimates figure
+```{r}
+coral <- coef(summary(coral.multi)) %>%
+        mutate(Taxa = "Coral") %>%
+        mutate(Significance= "No")
+
+algae <- coef(summary(algae.multi))%>%
+        mutate(Taxa = "Algae")%>%
+        mutate(Significance= "Yes")
+
+turf <- coef(summary(turf.multi))%>%
+        mutate(Taxa = "Turf")%>%
+        mutate(Significance= "No")
+
+cca <- coef(summary(cca.multi))%>%
+        mutate(Taxa = "CCA")%>%
+        mutate(Significance= "Yes")
+
+inv <- coef(summary(inv.multi))%>%
+        mutate(Taxa = "Invertebrates")%>%
+        mutate(Significance= "No")
+
+plot.df <- rbind(coral, algae, turf, cca, inv)
+
+plot.df$Taxa <- factor(plot.df$Taxa, levels = c("Invertebrates", "Turf","CCA", "Algae", "Coral"))
+
+
+p_pooled.estimates <- ggplot(plot.df, aes(y=Taxa, x=estimate, colour=Significance)) +
+        geom_pointrange(aes(xmin=ci.lb, xmax=ci.ub), size=1) +
+        theme_pubr(base_size=16) +
+        geom_vline(xintercept = 0, linetype="dashed")+
+        scale_colour_manual(values=c("darkgrey","black")) +
+  labs(x="Standardized Mean Difference")
+p_pooled.estimates
+
+ggsave(p_pooled.estimates, filename="../figures/pooled-estimates.png", height=6, width=8)
+```
+
