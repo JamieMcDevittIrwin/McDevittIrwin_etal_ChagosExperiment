@@ -1,0 +1,7 @@
+"0","# Normalize eye and fin characteristics by body depth (5 variables total) to create new variables"
+"0","FishMorph <- mutate(FishMorph, Caudal_fin_length_cm_norm = Caudal_fin_length_cm / Body_depth_cm)"
+"0","FishMorph <- mutate(FishMorph, Caudal_fin_height_cm_norm = Caudal_fin_height_cm / Body_depth_cm)"
+"0","FishMorph <- mutate(FishMorph, Caudal_fin_area_cm2_norm = Caudal_fin_area_cm2 / Body_depth_cm)"
+"0","FishMorph <- mutate(FishMorph, Eye_diameter_cm_norm = Eye_diameter_cm / Body_depth_cm)"
+"0","FishMorph <- mutate(FishMorph, Eye_area_cm2_norm = Eye_area_cm2 / Body_depth_cm)"
+"0",""

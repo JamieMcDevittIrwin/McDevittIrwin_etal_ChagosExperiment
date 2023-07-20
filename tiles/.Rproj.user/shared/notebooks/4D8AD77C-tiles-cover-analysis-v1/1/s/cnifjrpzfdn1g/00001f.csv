@@ -1,0 +1,7 @@
+"0",""
+"0",""
+"0",""
+"0","plot <- gg_ordiplot(data.mds, "
+"0","                    groups= cover_wide$Treatment, "
+"0","                    hull=FALSE, ellipse=TRUE, spiders=FALSE,"
+"0","                    kind=""sd"", pt.size=4) "

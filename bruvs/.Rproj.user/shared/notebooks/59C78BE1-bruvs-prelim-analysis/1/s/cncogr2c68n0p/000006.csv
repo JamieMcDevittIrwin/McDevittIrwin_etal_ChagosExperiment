@@ -1,0 +1,7 @@
+"0","# my numbers are still slightly different from Bretts"
+"0",""
+"0","# Mean shark abundance per island (plus sample size)"
+"0","SharkComplete %>% "
+"0","  group_by(Region) %>%"
+"0","  summarize(mean_maxN = mean(MaxN),"
+"0","            n_Drop= length(unique(Drop))) # sample size per island"

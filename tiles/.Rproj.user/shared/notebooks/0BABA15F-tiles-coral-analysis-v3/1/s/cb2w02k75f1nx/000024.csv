@@ -1,0 +1,7 @@
+"0","plot(ggpredict(m2, c(""Herbivores"", ""Treatment"")))"
+"1","[31m`Herbivores` was not found in model terms. Maybe misspelled?
+[39m"
+"2","Warning: longer object length is not a multiple of shorter object length"
+"2","Error in names(x) <- value : 
+  'names' attribute [6] must be the same length as the vector [4]
+"

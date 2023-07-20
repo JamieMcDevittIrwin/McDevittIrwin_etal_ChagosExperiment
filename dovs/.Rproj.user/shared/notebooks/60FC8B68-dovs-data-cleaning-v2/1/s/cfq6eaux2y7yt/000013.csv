@@ -1,0 +1,5 @@
+"0","dovs$Number[dovs$Number == ""2\\""] <- ""2"" # confirmed with Lauren this was a typo"
+"0","dovs$Number <- as.numeric(as.character(dovs$Number))"
+"0",""
+"0","# Turn year into a factor"
+"0","dovs$Year <- as.factor(dovs$Year)"

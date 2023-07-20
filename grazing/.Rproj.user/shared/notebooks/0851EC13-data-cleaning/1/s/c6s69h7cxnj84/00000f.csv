@@ -1,0 +1,7 @@
+"0","# How many bites per species?"
+"0","herbs.bites.species <- herbivores %>%"
+"0","  group_by(Family.Latin, Species) %>%"
+"0","  count(Family.Latin)"
+"0",""
+"0","herbs.bites.species <- as.data.frame(herbs.bites.species)"
+"0","herbs.bites.species"

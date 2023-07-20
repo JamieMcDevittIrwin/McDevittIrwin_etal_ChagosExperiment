@@ -1,0 +1,9 @@
+"0","# my sample size number is the same as Bretts "
+"0","# is this actually how other papers do this? "
+"0",""
+"0","# Overall length"
+"0","SharkLengths %>%"
+"0","  group_by(Region,Species) %>%"
+"0","  summarize(mean_length = mean(Length..mm.)) "
+"2","Error in eval(lhs, parent, parent) : object 'SharkLengths' not found
+"

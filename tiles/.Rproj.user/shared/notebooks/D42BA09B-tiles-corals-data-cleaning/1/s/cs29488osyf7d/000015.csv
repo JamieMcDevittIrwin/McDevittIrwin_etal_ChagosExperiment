@@ -1,0 +1,7 @@
+"0","# way more corals on the bottom in the uncaged tiles"
+"0",""
+"0",""
+"0","corals.2021 %>%"
+"0","  filter(Tile_side. %in% c(""Side"", ""Side/bottom/top"", ""Side/Top/bottom"", ""Top/side/bottom"")) %>%"
+"0","  group_by(Treatment) %>%"
+"0","  summarize(Coral.sum = sum(Coral, na.rm= TRUE))"

@@ -1,0 +1,7 @@
+"0",""
+"0",""
+"0","corals.2021 %>% ggplot(aes(x= Treatment, fill=Coral_size_bin)) +"
+"0","  geom_bar(position=""fill"") +  "
+"0","  theme_pubr(base_size= 16) +"
+"0","  theme(legend.position = ""right"")"
+"0",""

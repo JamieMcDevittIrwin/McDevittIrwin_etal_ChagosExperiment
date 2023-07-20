@@ -1,0 +1,6 @@
+"0",""
+"0","psem.model <- piecewiseSEM::psem("
+"0","  lm(Mesopredators ~ Shark_Sum_Abundance, data=herbivore.bites.shark.fish),"
+"0","  lm(bites.per.min.grazeable ~ Shark_Sum_Abundance + Mesopredators, data=herbivore.bites.shark.fish))"
+"2","Error in eval(predvars, data, env) : object 'Mesopredators' not found
+"

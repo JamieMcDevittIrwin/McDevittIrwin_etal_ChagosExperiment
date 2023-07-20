@@ -1,0 +1,6 @@
+"0","# Initial Models
+m5 <- glmmTMB(Coral ~ Treatment*grazing.mean + (1|Tile), zi = ~ 0, data = graze.side.df, family = poisson, na.action = ""na.fail"")
+"
+"2","Error in eval(offsub, data, enclos = environment(formula)) : 
+  object 'graze.side.df' not found
+"

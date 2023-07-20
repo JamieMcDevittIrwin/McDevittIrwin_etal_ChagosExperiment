@@ -1,0 +1,6 @@
+"0",""
+"0",""
+"0",""
+"0","# Plot in GGplot"
+"0","library(""ggeffects"")"
+"0","plot(ggemmeans(m2, c(""Chaetodontidae.avg"", ""Treatment"")))"

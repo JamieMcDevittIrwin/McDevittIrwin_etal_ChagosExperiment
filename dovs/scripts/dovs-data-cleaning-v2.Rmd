@@ -1,0 +1,202 @@
+---
+title: "Organizing the DOVS data"
+author: "Jamie McDevitt-Irwin"
+date: "2/15/2022"
+output: html_document
+---
+
+
+
+# Libraries
+```{r setup, include=FALSE, echo=FALSE}
+knitr::opts_chunk$set(echo = FALSE)
+library(tidyverse);library(ggpubr);library(reshape2);library(stringr);library(vegan);library(lme4);library(janitor);
+```
+
+
+# Load Data
+```{r, results = 'hide', echo=FALSE, include=FALSE}
+# read in the data
+dovs <- read.csv("../data/December2019_FromLauren/BIOT7097_DOV_Data_2018-2019_CombinedData.csv", stringsAsFactors = FALSE) # has the 3d points and regular points combined
+
+load("../../bruvs/data/created/mean.sum.shark.abundance.tiles.RData") # mean.shark.abundance.tiles
+
+levels(factor(dovs$OpCode)) # 15 op codes= 15 DOVS (correct!)
+
+
+dim(dovs) # 10462    34
+# each row is number of fish in a frame at a specific time
+```
+
+**Data Description**
+OpCode= each DOV  
+Period= transect of the DOV  
+Number= number of that individual seem in that specific frame (not in the biot op code)
+
+Independent replicates= 5m X 30m transects  
+
+
+
+
+
+```{r, include=TRUE, results= 'hide', include=FALSE}
+#### Quick Summary ####
+# How many species are there?
+unique(dovs$Full.Species.Name) #209 (should only be 208 species, there is a blank species?)
+dovs %>% filter(Full.Species.Name == "  ") # there is a blank species because they weren't identified and are baitfish
+
+# Number in each row
+dovs$Number # needs to be changed from a character
+unique(dovs$Number) # why is there a 2\\
+dovs %>% filter(Number == "2\\") 
+dovs$Number[dovs$Number == "2\\"] <- "2" # confirmed with Lauren this was a typo
+dovs$Number <- as.numeric(as.character(dovs$Number))
+
+# Turn year into a factor
+dovs$Year <- as.factor(dovs$Year)
+```
+
+
+
+# Clean
+```{r}
+#### Organize the Data ####
+dovs <- dovs %>% 
+  mutate(OpCode_transect=str_c(OpCode,".",Period))%>% # Create a transect_opcode column (this is each independent replicate)
+  mutate(Atoll = ifelse(grepl("Brother", Location), "Brothers", Location)) %>% # New variable of atoll that combines middle and south brother 
+  filter(!Family %in% c("Carcharhinidae", "Aetobatidae", "Ginglymostomatidae","Cheloniidae")) %>% # get rid of sharks, rays, turtles
+  mutate(OpCode_Site = ifelse(OpCode %in% "BIOT_7097_DOV_9_Egmont_2018", "BIOT_7097_DOV_1_Egmont_20190317", OpCode)) # make the two egmont sites the same overall site
+
+
+# filter out the extra 20m from the 50m transects in 2018 DOVS so everything is at 30m
+dovs <- dovs %>% 
+  filter(!(OpCode == "BIOT_7097_DOV_9_Egmont_2018" & Period == "T1" & Time..mins. > 8.57)) %>%  
+  filter(!(OpCode == "BIOT_7097_DOV_9_Egmont_2018" & Period == "T2" & Time..mins. > 11.78)) %>%
+  filter(!(OpCode == "BIOT_7097_DOV_9_Egmont_2018" & Period == "T3" & Time..mins. > 20.97)) %>%
+  filter(!(OpCode == "BIOT_7097_DOV_9_Egmont_2018" & Period == "T4" & Time..mins. > 24.33))
+  
+
+levels(factor(dovs$OpCode_transect)) 
+# 58 transects X opcodes 
+levels(factor(dovs$OpCode))
+# 15 op codes= 15 DOVS (correct!)
+
+```
+
+
+
+
+# Wide and Long DF
+https://www.r-bloggers.com/r-for-ecologists-creating-a-site-x-species-matrix/ 
+```{r Including Zeros, results= 'hide', include=FALSE}
+#### Sum of Species Counts ####
+###############################
+# Add up the counts for each species at each DOV op code_transect
+# since the data has multiple species throughout different times of the video
+dovs.sum <- dovs %>% 
+  group_by(Atoll, Location, Site, Year, 
+           OpCode_Site,OpCode,OpCode_transect, Full.Species.Name) %>%
+  summarize(Abundance= sum(Number)) %>% # sum up the number of individuals for each species
+  ungroup() # always need to ungroup after group_by so you can mutate that variable if you need to
+
+
+
+
+
+
+#### Wide Data ####
+###################
+# Get NAn values for every species that was not recorded at an OpCode_transect, this creates a wide site by species matrix
+dovs.wide <- reshape2::dcast(dovs.sum, Atoll + OpCode + OpCode_Site + 
+                               Location + Site + Year + OpCode_transect 
+                             ~ Full.Species.Name, value.var = 'Abundance')
+dovs.wide <- as.data.frame(dovs.wide)
+dovs.wide[is.na(dovs.wide)] <- 0 # convert these NAn to zero
+
+# Rename the baitfish column that were unidentified
+colnames(dovs.wide)[8] = "Unidentified baitfish"
+
+# Create a new column based on shark abundance (cat and cont)
+View(mean.shark.abundance.tiles)
+dovs.wide <- dovs.wide %>% 
+  mutate(Shark_Abundance= ifelse(Atoll %in% "Egmont", "High", 
+                                 ifelse(Atoll %in% "Salomon", "Medium", "Low"))) %>% 
+  mutate(Shark_Sum_Abundance= ifelse(Atoll %in% "Egmont", 6.9, 
+                                     ifelse(Atoll %in% "Salomon", 4.8, 
+                                            ifelse(Atoll %in% "Peros Banhos", 3.8, 
+                                                   ifelse(Atoll %in% "Brothers", 2.9, 3.1)))))
+
+dovs.wide$Shark_Abundance <- factor(dovs.wide$Shark_Abundance,
+                                    levels = c("Low", "Medium", "High")) # reorder
+
+dovs.wide$Atoll <- factor(dovs.wide$Atoll,
+                          levels = c("Nelsons Island", "Brothers", "Peros Banhos", "Salomon", "Egmont")) # reorder
+
+dovs.wide$Shark_Sum_Abundance <-as.numeric(dovs.wide$Shark_Sum_Abundance)
+
+dim(dovs.wide) # 58 212
+
+
+#### Long Data ####
+###################
+dovs.long <- reshape2::melt(dovs.wide, 
+                            id.vars=c('Year','Atoll', 'Location', "Site", 
+                                      "OpCode_transect","OpCode_Site", "OpCode", 
+                                      "Shark_Abundance", "Shark_Sum_Abundance"), 
+                            value.name= "Abundance", 
+                            variable.name= "Full.Species.Name") %>% 
+  mutate(Family= word(Full.Species.Name, 1))
+dim(dovs.long) # 11774    12
+
+```
+
+
+
+
+# Trophic Groupings
+```{r}
+
+#### Looking at Corallivores ####
+# Add in the other corallivore data besides chaetodontidae
+corallivore <- read.csv("../data/traits/Chagos Fish Traits v2.xlsx - Corallivores.csv", stringsAsFactors = FALSE)
+
+corallivore.1 <- corallivore %>%
+  filter(X =="Y") %>%
+  select(Full.Species.Name)
+
+# filter out corallivores from tile data
+corallivore_data <- dovs.long %>%
+  filter(Full.Species.Name %in% corallivore.1$Full.Species.Name | Family == "Chaetodontidae")
+
+corallivore_transect <- corallivore_data %>%
+   group_by(OpCode_transect, OpCode_Site) %>% 
+  summarize(sum= sum(Abundance)) %>% # sum up all the corallivore species abundance per transect
+  dplyr::rename("corallivore"= "sum") %>%
+  select(-OpCode_Site) %>%
+  ungroup()
+
+
+#### FAMILY LEVEL ####
+dovs.wide.family <- dovs.long %>%
+  # filter out herbivores, corallivores and mesopredators
+  filter(Family %in% c("Scaridae", "Acanthuridae", "Chaetodontidae", 
+                       "Lutjanidae", "Lethrinidae", "Haemulidae","Serranidae", "Carangidae")) %>% 
+  # group by and summarize for each transect
+  group_by(OpCode_transect, OpCode, OpCode_Site, Site, Atoll, Family, Shark_Sum_Abundance) %>% 
+  # sum up each family for each transect
+  summarize(sum= sum(Abundance)) %>% 
+  # make it a wide df
+  pivot_wider(names_from= Family, values_from= sum) %>%
+  # add up mesopredators and herbivores
+    mutate(Mesopredators = Serranidae + Haemulidae + Lutjanidae + Lethrinidae+ Carangidae) %>%
+  mutate(Herbivores = Scaridae + Acanthuridae) %>%
+  full_join(corallivore_transect, by="OpCode_transect")
+
+dovs.wide.family <- as.data.frame(dovs.wide.family)
+
+# only four carangidae seen at all, so this doesn't really change our results
+# when you go to the analysis, there is only one carangidae seen at all
+
+```
+
+Looks good! 6April2023

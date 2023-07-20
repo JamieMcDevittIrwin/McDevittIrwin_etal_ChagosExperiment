@@ -1,0 +1,8 @@
+"0","# fish data from BRUVS"
+"0","fishes_maxN_data <- read.csv(file='../data/raw/fishes_fromBrett/MaxN for Jamie.csv', header=TRUE, sep="","")"
+"0",""
+"0","# fish length data"
+"0","fishes_lengths_data <- read.csv(file='../data/raw/fishes_fromBrett/BRUVS Length Data BMT.csv', header=TRUE, sep="","")"
+"0",""
+"0","# load libraries"
+"0","library(dplyr);library(ggplot2);library(ggpubr);library(tidyr);library(car);library(MASS);library(pscl);library(lmtest);library(multcomp);library(sjPlot);library(lsmeans);library(rcompanion);library(ggsignif);library(stringr)"

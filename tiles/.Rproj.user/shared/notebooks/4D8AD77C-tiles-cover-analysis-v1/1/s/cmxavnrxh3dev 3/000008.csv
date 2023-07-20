@@ -1,0 +1,14 @@
+"0","# Combine barplots and NMDS
+p_fig4 <- ggarrange(p_nmds.broad, p_relabund_treatment)
+p_fig4
+"
+"2","Warning in gzfile(file, ""wb"") :"
+"2","
+ "
+"2"," cannot open compressed file '/Users/jamiemcdevitt-irwin/Documents/Documents - Jamie's MacBook Pro/Git_Repos/BIOT-trophic-cascades/tiles/.Rproj.user/shared/notebooks/4D8AD77C-tiles-cover-analysis-v1/1/4A4D390594331797/cmxavnrxh3dev_t/40cd3532473d41b3b674067226980b6f.snapshot', probable reason 'No such file or directory'
+"
+"2","Error in gzfile(file, ""wb"") : cannot open the connection
+"
+"2","Error in dev.off() : 
+  QuartzBitmap_Output - unable to open file '/Users/jamiemcdevitt-irwin/Documents/Documents - Jamie's MacBook Pro/Git_Repos/BIOT-trophic-cascades/tiles/.Rproj.user/shared/notebooks/4D8AD77C-tiles-cover-analysis-v1/1/4A4D390594331797/cmxavnrxh3dev_t/_rs_chunk_plot_001.png'
+"

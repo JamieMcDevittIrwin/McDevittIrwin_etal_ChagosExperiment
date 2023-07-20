@@ -1,0 +1,6 @@
+"0","# Saving on object in RData format
+save(mean_sum_shark_abundance, file = ""..data/created/mean-sum-shark-abundance.RData"")
+"
+"2","cannot open compressed file '..data/created/mean-sum-shark-abundance.RData', probable reason 'No such file or directory'"
+"2","Error in gzfile(file, ""wb"") : cannot open the connection
+"

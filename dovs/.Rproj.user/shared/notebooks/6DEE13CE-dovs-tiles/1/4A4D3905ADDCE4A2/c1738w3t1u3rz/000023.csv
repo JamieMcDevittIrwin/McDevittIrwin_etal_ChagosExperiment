@@ -1,0 +1,12 @@
+"0",""
+"0",""
+"0",""
+"0","# NMDS"
+"0","dovs.tiles.data <- dovs.wide.tiles %>%"
+"0","  column_to_rownames(""OpCode_transect"") %>%"
+"0","  select(-c(Atoll:Year))"
+"0",""
+"0","dovs_bray <-vegdist(dovs.tiles.data, method='bray')"
+"2","Error in vegdist(dovs.tiles.data, method = ""bray"") : 
+  input data must be numeric
+"

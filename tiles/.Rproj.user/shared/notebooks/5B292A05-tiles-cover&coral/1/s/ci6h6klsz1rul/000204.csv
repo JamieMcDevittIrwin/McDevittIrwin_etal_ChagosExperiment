@@ -1,0 +1,29 @@
+"0","
+# Corallivore X treatment
+p_corallivore_treatment <- ggplot(corallivore.treat.df, aes(x, predicted, color = group)) + 
+  geom_line(size=1.5) +
+  theme_pubr(base_size=16) +
+  labs(x=""Corallivores"", y="""") + 
+  geom_ribbon(aes(ymin=conf.low, ymax=conf.high, fill=group), alpha=0.1, colour=NA)+ 
+    scale_colour_hue(h = c(180, 300))+
+  geom_text(label=""."", x=1, y=7, size=16, color= ""black"")
+p_corallivore_treatment
+
+# Herbivores X treatment
+p_herbivore_treatment <- ggplot(herbivore.treat.df, aes(x, predicted, color = group)) + 
+  geom_line(size=1.5) +
+  theme_pubr(base_size=16) +
+  labs(x=""Herbivores"", y="""") + 
+  geom_ribbon(aes(ymin=conf.low, ymax=conf.high, fill=group), alpha=0.1, colour=NA)+ 
+    scale_colour_hue(h = c(180, 300))
+p_herbivore_treatment
+"
+"0",""
+"0","# Corallivore"
+"0","p_corallivore <- ggplot(corallivore.df, aes(x, predicted)) + "
+"0","  geom_line(size=1.5) +"
+"0","  theme_pubr(base_size=16) +"
+"0","  labs(x=""Corallivores"", y=""Predicted Coral Abundance"") + "
+"0","  geom_ribbon(aes(ymin=conf.low, ymax=conf.high), alpha=0.2, colour=NA) +"
+"0","  geom_text(label=""*"", x=1.2, y=2.5, size=16)"
+"0","p_corallivore"

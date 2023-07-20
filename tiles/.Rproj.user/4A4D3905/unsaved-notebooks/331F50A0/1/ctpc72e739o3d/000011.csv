@@ -1,0 +1,12 @@
+"0","# Raw Data"
+"0","#View(data)"
+"0","#View(metadata) #221 tiles"
+"0",""
+"0",""
+"0","# We want to pull out the transect for each tile (all the other columns are filled in from the metadata)"
+"0","transect <- metadata %>%"
+"0","  mutate(Tile_Treatment = paste(Tag_number, Treatment, sep= ""."")) %>%"
+"0","  dplyr::select(Transect, Tile_Treatment)"
+"2","Error in metadata %>% mutate(Tile_Treatment = paste(Tag_number, Treatment,  : 
+  could not find function ""%>%""
+"

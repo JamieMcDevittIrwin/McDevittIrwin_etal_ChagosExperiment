@@ -1,0 +1,6 @@
+"0",""
+"0","sem.df <- all.df %>%"
+"0","  mutate(Mesopredators = Serranidae + Haemulidae + Lutjanidae + Lethrinidae)"
+"2","Error in mutate(., Mesopredators = Serranidae + Haemulidae + Lutjanidae +  : 
+  object 'all.df' not found
+"

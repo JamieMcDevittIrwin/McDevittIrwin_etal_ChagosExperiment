@@ -1,0 +1,14 @@
+"0","# Region X Species
+names <- as_labeller(c(`amblyrhynchos` = ""C. amblyrhynchos"", `ferrugineus` = ""N. ferrugineus"",`melanopterus` = ""C. melanopterus"", `obesus` = ""T. obesus"")) 
+
+p_sharks_species_region <- bruvs.long_tiles %>% 
+  dplyr::group_by(Region,Species) %>%
+  dplyr::summarize(mean_maxN = mean(MaxN)) %>%
+  group_by(Region) %>%
+  ggplot(aes(reorder(Region, mean_maxN), mean_maxN, fill= Species)) +
+  geom_bar(stat= 'identity', position=""fill"") + 
+  theme_pubr() +  labs(x= """", y=""Relative Abundance"")+
+  scale_x_discrete(guide = guide_axis(angle = 60))
+"
+"2","`summarise()` has grouped output by 'Region'. You can override using the `.groups` argument."
+"0","p_sharks_species_region "

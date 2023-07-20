@@ -1,0 +1,539 @@
+---
+title: 'Tile Corals: Analysis'
+author: "Jamie McDevitt-Irwin"
+date: "2/2/2022"
+output: html_document
+---
+
+Dependancy: tiles-corals-data-cleaning.Rmd
+
+v3: now cover&coral has the fish and fish grazing models, this only has coral models and effect sizes
+
+**Final Dataframes**
+corals.2021_wide
+corals.2021_long
+
+# Packages
+```{r}
+library(lme4)
+library(lattice)
+library(MASS)
+require(pscl) # alternatively can use package ZIM for zero-inflated models
+library(lmtest)
+library(GLMMadaptive) # mixed models that are zero inflated 
+library(glmmTMB)
+library(lsmeans)
+library(DHARMa)
+library(dplyr)
+
+#devtools::install_github("mtorchiano/effsize")
+library(effsize)
+library(piecewiseSEM)
+
+library(devtools)
+#install_github("jslefche/piecewiseSEM@devel", build_vignette = TRUE)
+
+```
+
+
+# Plots
+```{r}
+############
+# Overall Corals
+############
+meancorals.treatment <- corals.2021_long %>%
+  group_by(Treatment) %>%
+  summarise(sum= sum(Coral), 
+            mean=mean(Coral), 
+            se=std.error(Coral))
+meancorals.treatment
+
+p_overall <- meancorals.treatment %>% ggplot(aes(x= Treatment, y=mean)) +
+  geom_bar(position = "dodge", stat='identity')+
+    geom_errorbar(aes(ymin=mean-se, ymax=mean+se), width=.2,
+                 position=position_dodge(.9)) +
+  labs(y="Coral abundance (mean +/- se)") +
+  theme_pubr(base_size= 16) +
+  theme(legend.position = "right")
+p_overall
+
+ggsave(file= "../figures/overall.png",
+       plot=p_overall,
+       height= 7,
+       width= 10)
+
+############
+# Overall- Tile Position
+############
+meancorals <- corals.2021_long %>%
+  group_by(Treatment, Tile_position) %>%
+  summarise(sum= sum(Coral), 
+            mean=mean(Coral), 
+            se=std.error(Coral)) %>%
+  mutate_if(is.character, as.factor) %>%
+    mutate(Tile_position=fct_relevel(Tile_position,c("Top","Bottom","Side")))
+
+
+library(viridis)
+p_corals <- meancorals %>% ggplot(aes(x= Treatment, y=mean, fill= Tile_position)) +
+  geom_bar(position = "dodge", stat='identity')+
+    geom_errorbar(aes(ymin=mean-se, ymax=mean+se), width=.2,
+                 position=position_dodge(.9)) +
+  labs(y="Coral abundance (mean +/- se)", fill= "Tile Position") +
+  theme_pubr(base_size= 16) +
+  theme(legend.position = "right") + 
+  scale_fill_viridis(discrete=TRUE)
+p_corals
+
+ggsave(file= "../figures/overall-corals.png",
+       plot=p_corals,
+       height= 7,
+       width= 10)
+  
+
+
+
+############
+# By Site
+############
+meancorals <- corals.2021_long %>%
+  group_by(Site, Treatment) %>%
+  summarise(sum= sum(Coral), 
+            mean=mean(Coral), 
+            se=std.error(Coral))
+
+p_coralsXsite <- meancorals %>% 
+  ggplot(aes(x= Treatment, y=mean)) +
+  geom_bar(position = "dodge", stat='identity')+
+    geom_errorbar(aes(ymin=mean-se, ymax=mean+se), width=.2,
+                 position=position_dodge(.9)) +
+  theme_pubr() + 
+  facet_wrap(~ Site)
+
+p_coralsXsite
+
+ggsave(file= "../figures/coralsXsite.pdf",
+       plot=p_coralsXsite,
+       height= 7,
+       width= 9)
+
+
+############
+# By Site- Position
+############
+meancorals <- corals.2021_long %>%
+  group_by(Site, Treatment, Tile_position) %>%
+  summarise(sum= sum(Coral), 
+            mean=mean(Coral), 
+            se=std.error(Coral))
+
+p_coralsXsite <- meancorals %>% 
+  ggplot(aes(x= Treatment, y=mean, fill= Tile_position)) +
+  geom_bar(position = "dodge", stat='identity')+
+    geom_errorbar(aes(ymin=mean-se, ymax=mean+se), width=.2,
+                 position=position_dodge(.9)) +
+  theme_pubr() + 
+  facet_wrap(~ Site)
+
+p_coralsXsite
+
+ggsave(file= "../figures/coralsXsiteXposition.pdf",
+       plot=p_coralsXsite,
+       height= 7,
+       width= 9)
+
+
+
+############
+# Coral Size
+############
+corals.2021 %>%
+  group_by(Treatment, Coral_size_bin) %>%
+  count()
+
+
+corals.2021 %>% ggplot(aes(x= Treatment, fill=Coral_size_bin)) +
+  geom_bar(position="fill") +  
+  theme_pubr(base_size= 16) +
+  theme(legend.position = "right")
+
+```
+Not really a difference in size between treatments! (a few corals dont have size here though)
+
+
+
+# Models
+## Overall
+https://stats.stackexchange.com/questions/531601/dharma-quantile-deviations-detected 
+```{r}
+# How much of the data is zero?
+100*sum(corals.2021_wide$All.Corals == 0)/nrow(corals.2021_wide) # 65.25822
+hist(corals.2021_wide$All.Corals) # very zero inflated
+
+# Convert characters to factors 
+corals.2021_wide$Treatment <- as.factor(corals.2021_wide$Treatment)
+corals.2021_wide$Island <- as.factor(corals.2021_wide$Island)
+corals.2021_wide$Transect <- as.factor(corals.2021_wide$Transect)
+corals.2021_wide$Tile <- as.factor(corals.2021_wide$Tile)
+corals.2021_wide$Tile_Treatment <- as.factor(corals.2021_wide$Tile_Treatment)
+corals.2021_wide$Site <- as.factor(corals.2021_wide$Site)
+
+
+
+#### Initial Models ####
+m1 <- glmmTMB(All.Corals ~ Treatment + (1|Site) + (1|Tile), zi = ~ 0, data = corals.2021_wide, family = poisson)
+
+m2 <- glmmTMB(All.Corals ~ Treatment + (1|Site) + (1|Tile), zi = ~ 1, data = corals.2021_wide, family = poisson)
+
+m3 <- glmmTMB(All.Corals ~ Treatment + (1|Site) + (1|Tile), zi = ~ 0, data = corals.2021_wide, family = nbinom2())
+
+m4 <- glmmTMB(All.Corals ~ Treatment + (1|Site) + (1|Tile), zi = ~ 1, data = corals.2021_wide, family = nbinom2())
+
+
+AIC(m1,m2,m3,m4) # m2 is best
+
+summary(m2)
+performance::r2(m2)  
+# Conditional R2: 0.395
+#      Marginal R2: 0.023
+# Had to decrease the random effects structure to get an R2 value for conditional
+
+car::Anova(m2, type=2) # not significant
+#            Chisq Df Pr(>Chisq)
+# Treatment 3.5915  2      0.166
+
+# Check residuals
+simres <- simulateResiduals(m2)
+plot(simres) # all good
+
+# Plot
+overall.em <- emmeans(m2, ~ Treatment, type="response")
+overall.em.df <- as.data.frame(overall.em)
+
+p_eemeans_overall <- ggplot(overall.em.df, aes(x=Treatment, y=rate, color=Treatment)) +
+  geom_pointrange(size=1, aes(ymin=rate-SE, ymax= rate+SE)) +
+  theme_pubr(base_size=16) +
+  labs(y="Coral Recruits (least square means)") +
+  ggtitle("a) Overall") + 
+    scale_colour_hue(h = c(180, 300)) 
+p_eemeans_overall
+
+ggsave(p_eemeans_overall, file="../figures/corals-eemeans.png")
+```
+
+Overall, we find no difference in coral recruit numbers between our treatments (caged, uncaged and partially caged)
+
+
+
+### Top
+```{r}
+# How much of the data is zero?
+100*sum(corals.2021_wide$Top == 0)/nrow(corals.2021_wide) # 87.32394
+hist(corals.2021_wide$Top) # very zero inflated
+
+
+
+#### Initial Models ####
+m1 <- glmmTMB(Top ~  Treatment + (1|Site) + (1|Tile), zi = ~ 0, data = corals.2021_wide, family = poisson)
+
+m2 <- glmmTMB(Top ~  Treatment + (1|Site) + (1|Tile), zi = ~ 1, data = corals.2021_wide, family = poisson)
+
+m3 <- glmmTMB(Top ~  Treatment + (1|Site) + (1|Tile), zi = ~ 0, data = corals.2021_wide, family = nbinom2())
+
+m4 <- glmmTMB(Top ~  Treatment + (1|Site) + (1|Tile), zi = ~ 1, data = corals.2021_wide, family = nbinom2())
+
+
+AIC(m1,m2,m3,m4) #m1 is best
+
+summary(m1)
+performance::r2(m1)
+# same warnings as above
+# 
+#   Conditional R2: 0.572
+#      Marginal R2: 0.209
+
+car::Anova(m1, type=2) 
+# Analysis of Deviance Table (Type II Wald chisquare tests)
+# 
+# Response: Coral
+#            Chisq Df Pr(>Chisq)    
+# Treatment 16.153  2  0.0003108 ***
+# ---
+# Signif. codes:  0 ‘***’ 0.001 ‘**’ 0.01 ‘*’ 0.05 ‘.’ 0.1 ‘ ’ 1
+
+# Model diagnostics
+m1_simresids <- simulateResiduals(m1)
+plot(m1_simresids) # no significant deviations
+
+# Plot
+top.em <- emmeans(m1, ~ Treatment, type="response")
+pairs(top.em)
+top.em.df <- as.data.frame(top.em)
+
+p_eemeans_top <- ggplot(top.em.df, aes(x=Treatment, y=rate, color=Treatment)) +
+  geom_pointrange(aes(ymin=rate-SE, ymax= rate+SE)) +
+  theme_pubr(base_size=16) +
+  theme(axis.text.x = element_blank(),
+        legend.position="none") +
+  labs(y="", x="") + 
+  ggtitle("b) Top")+
+  geom_text(label="*", x=3.2, y=0.2, size=10, color="black") +
+  scale_colour_hue(h = c(180, 300)) 
+p_eemeans_top
+
+ggsave(p_eemeans_top, file="../figures/corals-eemeans-top.png")
+
+```
+
+Treatment is very significant when just looking at corals found on the top of the tile, with the caged tiles having significantly more corals than the uncaged tiles.
+
+### Bottom
+```{r}
+# How much of the data is zero?
+100*sum(corals.2021_wide$Bottom == 0)/nrow(corals.2021_wide) # 80.28169
+hist(corals.2021_wide$Bottom) # very zero inflated
+
+
+# Initial Models
+m5 <- glmmTMB(Bottom ~ Treatment + (1|Site) + (1|Tile), zi = ~ 0, data = corals.2021_wide, family = poisson)
+
+m6 <- glmmTMB(Bottom ~ Treatment+ (1|Site) + (1|Tile), zi = ~ 1, data = corals.2021_wide, family = poisson)
+
+m7 <- glmmTMB(Bottom ~ Treatment + (1|Site) + (1|Tile), zi = ~ 0, data = corals.2021_wide, family = nbinom2())
+
+m8 <- glmmTMB(Bottom ~ Treatment+ (1|Site) + (1|Tile), zi = ~ 1, data = corals.2021_wide, family = nbinom2())
+# doesn't converge
+
+AIC(m5,m6,m7,m8) # m6 
+
+# Model Diagnostics
+m6_simresids <- simulateResiduals(m6)
+plot(m6_simresids) # all good
+
+performance::r2(m6)
+ # Conditional R2: 0.354
+ #     Marginal R2: 0.066
+
+car::Anova(m6, type=2)
+# Response: Coral
+#           Chisq Df Pr(>Chisq)  
+# Treatment 7.123  2     0.0284 *
+
+# Plot
+bottom.em <- emmeans(m6, ~ Treatment, type="response")
+pairs(bottom.em)
+bottom.em.df <- as.data.frame(bottom.em)
+
+p_eemeans_bottom <- ggplot(bottom.em.df, aes(x=Treatment, y=rate, col=Treatment)) +
+  geom_pointrange(aes(ymin=rate-SE, ymax= rate+SE)) +
+  theme_pubr(base_size=16) +
+  theme(axis.text.x = element_blank(),
+        legend.position="none") +
+  labs(y="") + 
+  ggtitle("c) Bottom")+ 
+    scale_colour_hue(h = c(180, 300)) +
+  geom_text(label="*", x=3.2, y=0.55, size=10, color="black")
+
+p_eemeans_bottom
+
+ggsave(p_eemeans_bottom, file="../figures/corals-eemeans-bottom.png")
+
+```
+
+### Side
+```{r}
+# How much of the data is zero?
+100*sum(corals.2021_wide$Side == 0)/nrow(corals.2021_wide) #91.07981
+hist(corals.2021_wide$Side) # very zero inflated
+
+
+# Initial Models
+m5 <- glmmTMB(Side ~ Treatment + (1|Tile), zi = ~ 0, data = corals.2021_wide, family = poisson)
+
+m6 <- glmmTMB(Side ~ Treatment+ (1|Tile), zi = ~ 1, data = corals.2021_wide, family = poisson)
+
+m7 <- glmmTMB(Side ~ Treatment + (1|Tile), zi = ~ 0, data = corals.2021_wide, family = nbinom2())
+
+m8 <- glmmTMB(Side ~ Treatment + (1|Tile), zi = ~ 1, data = corals.2021_wide, family = nbinom2())
+# convergence issue
+
+AIC(m5,m6,m7,m8) # m7 is barely better? but it doesn't give you an R2 for random effects, so we go with m4 since its simpler and close in AIC
+
+
+summary(m7)
+summary(m5)
+performance::r2(m7) # random effects errors --> singular 
+performance::r2(m5)
+# Conditional R2: 0.370
+#      Marginal R2: 0.012
+# Had to take away site to get a value for random effects R2 (tells you to respecify random structure)
+
+
+summary(m5)
+performance::r2(m5)
+# Conditional R2: 0.370
+#      Marginal R2: 0.012
+
+# Model Diagnostics
+m5_simresids <- simulateResiduals(m5)
+plot(m5_simresids) # all good
+
+
+car::Anova(m5, type=2)
+# not significant
+
+
+
+# Plot
+side.em <- emmeans(m5, ~ Treatment, type="response")
+side.em.df <- as.data.frame(side.em)
+
+p_eemeans_side <- ggplot(side.em.df, aes(x=Treatment, y=rate, col=Treatment)) +
+  geom_pointrange(aes(ymin=rate-SE, ymax= rate+SE)) +
+  theme_pubr(base_size=16) +
+  theme(axis.text.x = element_blank(),
+        legend.position="none") +
+  labs(y="", x="") + 
+  ggtitle("d) Side")+ 
+    scale_colour_hue(h = c(180, 300))
+p_eemeans_side
+
+ggsave(p_eemeans_side, file="../figures/corals-eemeans-side.png")
+
+
+```
+
+### Plot
+```{r}
+ggarrange(p_eemeans_overall, 
+          p_eemeans_top, 
+          p_eemeans_side, 
+          p_eemeans_bottom)
+
+test <- ggarrange(p_eemeans_top, 
+          p_eemeans_side, 
+          p_eemeans_bottom)
+
+
+p_coral <- ggarrange(p_eemeans_overall, test, 
+                     ncol=2, common.legend=TRUE,
+                     widths=c(2,3))
+p_coral
+ggsave(p_coral, file="../figures/coral-eemeans.png",
+       height=5, width=10)
+
+save(p_coral, file="../data/created-data/coral-eemeans.RData")
+
+```
+
+
+
+
+
+
+
+# Effect Sizes
+```{r}
+# Prep the data
+effectsize.df <- corals.2021_wide %>%
+  filter(Treatment != "Partial") 
+effectsize.df$Treatment <-factor(effectsize.df$Treatment, levels = c("Uncaged","Caged"))
+effectsize.df <- as.data.frame(effectsize.df) 
+
+
+## Calculate the effect size for each site
+# Calculating hedges g effect size (hedges.correction=TRUE)
+tmp <- with(effectsize.df,
+            by(effectsize.df, Site,
+               function(x) cohen.d(x$All.Corals, x$Treatment, hedges.correction = TRUE)))
+
+
+# Save the data for each site
+hedges.pb.lagoon <- tmp$`Il Poule Lagoon`
+hedges.pb.seaward  <- tmp$`Il Poule Seaward`
+hedges.salo.seaward <- tmp$`Il Anglaise Seaward`
+hedges.salo.lagoon <- tmp$`Il Anglaise Lagoon`
+hedges.nelson <- tmp$Nelson
+hedges.midbro <- tmp$`Middle Brother`
+hedges.rats <-tmp$`Il de rats`
+hedges.lubine <-tmp$`Il lubine`
+
+
+
+# Combine all together for plotting
+Site <- c("Il Poule Lagoon", "Il Poule Seaward", "Il Anglaise Seaward", "Il Anglaise Lagoon", "Nelson", "Middle Brother", "Il de rats", "Il lubine")
+
+estimate <- c(hedges.pb.lagoon$estimate, hedges.pb.seaward$estimate, hedges.salo.seaward$estimate, 
+              hedges.salo.lagoon$estimate, hedges.nelson$estimate, hedges.midbro$estimate, hedges.rats$estimate, hedges.lubine$estimate)
+
+sd <- c(hedges.pb.lagoon$sd, hedges.pb.seaward$sd, hedges.salo.seaward$sd, 
+              hedges.salo.lagoon$sd, hedges.nelson$sd, hedges.midbro$sd, hedges.rats$sd, hedges.lubine$sd)
+
+hedges.df <- as.data.frame(cbind(Site, estimate, sd))
+hedges.df$estimate <- as.numeric(hedges.df$estimate)
+hedges.df$sd <- as.numeric(hedges.df$sd)
+
+
+
+# Prep the data so it has the same colors as the bruvs data
+hedges.plot <- hedges.df %>%
+  mutate(Atoll = ifelse(Site == "Il Poule Lagoon", "Peros Banhos", 
+                        ifelse(Site == "Il Poule Seaward", "Peros Banhos",
+                        ifelse(Site == "Il Anglaise Seaward", "Salomon",
+                               ifelse(Site == "Il Anglaise Lagoon", "Salomon",
+                                      ifelse(Site == "Nelson", "Nelson",
+                                             ifelse(Site== "Middle Brother", "Brothers",
+                                                    "Egmont")))))))
+
+
+hedges.plot$Atoll <- factor(hedges.plot$Atoll, levels=c("Brothers", "Nelson", "Peros Banhos", 
+"Salomon", "Egmont"))
+
+
+
+
+# Calculate grand mean
+mean <- hedges.plot %>%
+  summarize(mean=mean(estimate),
+            sd=sd(estimate))
+
+# add back to data
+hedges.plot <- hedges.plot %>%
+  add_row(Site="Overall", estimate= 0.1400624, 
+          sd=0.5526944, Atoll=NA)
+
+hedges.plot$Site <- factor(hedges.plot$Site, 
+                           levels=c("Middle Brother", "Nelson", "Il Poule Lagoon", 
+"Il Poule Seaward", 
+"Il Anglaise Lagoon", "Il Anglaise Seaward", "Il de rats", "Il lubine", "Overall"))
+
+
+
+
+# Effect size by site
+p_tiles.effectsize <- ggplot(hedges.plot, aes(x=Site, y=estimate, col=Atoll)) +
+   geom_point(size=c(6,6,6,6,6,6,6,6,9), 
+              shape=(values=c(19,19,19,19,19,19,19,19,18)))+
+  geom_errorbar(aes(ymin = estimate-sd, 
+                    ymax = estimate+sd), 
+                width=0.2) +
+  labs (x= "", y= "Coral Effect Size") +
+  theme_pubr() +
+  geom_hline(yintercept= 0, linetype=2) +
+    theme_pubr(base_size = 16) + 
+  theme(axis.text.x = element_blank())+
+  scale_color_manual(values= c("#440154FF","#3B528BFF","#21908CFF","#5DC863FF","#FDE725FF")) +
+  guides(col = "none",shape="none")+
+  geom_vline(xintercept=8.5, linetype="dashed")
+
+p_tiles.effectsize
+
+ggsave(p_tiles.effectsize,
+       file="../figures/coral-effect-size.png",
+       height=5, width=7)
+save(p_tiles.effectsize, file="../data/coral-effect-size.RData")
+
+```
+
+
+Looks good! 11April2023

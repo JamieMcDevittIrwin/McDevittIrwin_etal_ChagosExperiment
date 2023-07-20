@@ -1,0 +1,39 @@
+"1","
+---
+Tests of directed separation:
+
+"
+"1"," "
+"1","No independence claims present. Tests of directed separation not possible.
+"
+"1","
+--
+Global goodness-of-fit:
+
+Chi-Squared ="
+"1"," "
+"1","4.556"
+"1"," "
+"1","with P-value ="
+"1"," "
+"1","0.102"
+"1"," "
+"1","and on"
+"1"," "
+"1","2"
+"1"," "
+"1","degrees of freedom"
+"1","
+Fisher's C ="
+"1"," "
+"1","7.764"
+"1"," "
+"1","with P-value ="
+"1"," "
+"1","0.101"
+"1"," "
+"1","and on"
+"1"," "
+"1","4"
+"1"," "
+"1","degrees of freedom"

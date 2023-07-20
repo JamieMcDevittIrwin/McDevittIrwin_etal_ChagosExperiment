@@ -1,0 +1,214 @@
+---
+title: "Chagos Tiles Data Cleaning"
+author: "Jamie McDevitt-Irwin"
+date: "1/31/2022"
+output: html_document
+---
+
+
+
+# Load Data
+```{r}
+library(tidyverse);library(ggpubr);library(janitor);library(vegan);library(plotrix)
+
+# raw data
+data <- read.csv("../data/raw-data/Chagos_November2021_Data_QAQC_Tiles-lab coral_CoralCheck_RRC_Final.xlsx - Chagos_November2021_Data_QAQC_T.csv",stringsAsFactors = FALSE,na.strings=c("","NA"))
+
+# metadata
+metadata <- read.csv("../data/raw-data/BIOT_March2019_Data_QAQC-tiles.csv",stringsAsFactors = FALSE,na.strings=c("","NA"))
+```
+
+
+
+
+# Data Cleaning
+```{r}
+# Raw Data
+View(data)
+View(metadata) #221 tiles
+
+
+# We want to pull out the transect for each tile (all the other columns are filled in from the metadata)
+transect <- metadata %>%
+  mutate(Tile_Treatment = paste(Tag_number, Treatment, sep= ".")) %>%
+  dplyr::select(Transect, Tile_Treatment)
+
+transect$Transect <- as.character(transect$Transect)
+
+# Clean up the data
+corals.2021 <- data %>%
+  dplyr::select(-c(Treatment_ABC, "Is.it.a.coral.":"Final.Decision",X)) %>% # get rid of silly columns
+  dplyr::filter(Tube_ID != "81") %>% # get rid of the water sample
+  mutate(Coral = ifelse(Tube_ID == "None", NA, 1)) %>% # new column to calculate corals
+  mutate(Tile_position = ifelse(Tile_side. %in% 
+                                  c("Top?", "Top", "Side/Top", "Top/side", "Side/top"), "Top", 
+                                ifelse(Tile_side. %in% c("Bottom?", "Bottom", "Side/Bottom", "Bottom/side", "Side/bottom", "bottom/side", "Bottom (side??)", "Bottom ", "Botttom "), "Bottom",
+                                       ifelse(Tile_side. %in% c("Side", "Side/bottom/top", "Side/Top/bottom", "Top/side/bottom"), "Side", "NA")))) %>% # keep these ones for now, but can always change our definition 
+  mutate(Tile_Treatment = paste(Tile, Treatment, sep= ".")) %>%
+  left_join(transect, by= "Tile_Treatment") %>%
+  # add in the transect column
+  dplyr::select(Date, Island, Site, Transect, Tile, Treatment, Tile_Treatment, Tube_ID, Tile_side., Tile_position, Diameter, Coral, Coral_size_bin, Notes) # reorder the columns
+```
+
+
+
+
+
+# Raw Data Summaries
+```{r}
+corals.2021 %>%
+  group_by(Treatment) %>%
+  summarize(Coral.sum = sum(Coral, na.rm= TRUE)) 
+# this is the total number of corals per tile, no matter where they are found on the tile
+
+# Caged	54		
+# Partial	31		
+# Uncaged	50	
+
+
+corals.2021 %>%
+  filter(Tile_side. %in% c("Top?", "Top", "Side/Top", "Top/side", "Side/top")) %>%
+  group_by(Treatment) %>%
+  summarize(Coral.sum = sum(Coral, na.rm= TRUE))
+# way more corals on the top in caged tiles than uncaged tiles
+
+corals.2021 %>%
+  filter(Tile_side. %in% c("Bottom?", "Bottom", "Side/Bottom", "Bottom/side", "Side/bottom", "bottom/side", "Bottom (side??)", "Bottom ", "Botttom ")) %>%
+  group_by(Treatment) %>%
+  summarize(Coral.sum = sum(Coral, na.rm= TRUE))
+# way more corals on the bottom in the uncaged tiles
+
+
+corals.2021 %>%
+  filter(Tile_side. %in% c("Side", "Side/bottom/top", "Side/Top/bottom", "Top/side/bottom")) %>%
+  group_by(Treatment) %>%
+  summarize(Coral.sum = sum(Coral, na.rm= TRUE))
+# simmilar amounts on both the caged and uncaged on the sides 
+
+corals.2021 %>%
+  group_by(Island, Site, Tile, Treatment) %>%
+  summarize(Coral.sum = sum(Coral, na.rm= TRUE))
+
+corals.2021 %>%
+  filter(Tile_side. %in% c("Top?", "Top", "Side/Top", "Top/side", "Side/top")) %>%
+  group_by(Treatment) %>%
+  summarize(Coral.sum = sum(Coral, na.rm= TRUE))
+
+```
+
+# Data Wrangling
+```{r}
+# Create a wide dataframe
+corals.2021_wide <- corals.2021 %>%
+  pivot_wider(names_from = Tile_position, values_from= Coral, values_fill=0) %>%
+  dplyr::select(-c(Tube_ID:Notes, "NA")) %>%
+  group_by(Date, Island,Transect, Site, Tile, Treatment, Tile_Treatment) %>%
+  summarise_each(funs(sum)) %>% # this adds up each row with the same tile/treatment
+  filter(Tile_Treatment != "14.Uncaged") %>% # filter out 14 uncaged because it was found flipped and it looked like the bottom and the top were the same in terms of percent cover
+  mutate(All.Corals = Top + Bottom + Side) 
+
+dim(corals.2021_wide)
+View(corals.2021_wide)
+
+
+save(corals.2021_wide, file="../data/created-data/corals.2021_wide.Rdata")
+
+
+# Create a long dataframe
+corals.2021_long <- corals.2021_wide %>%
+  pivot_longer(-c(Date:Tile_Treatment, All.Corals), names_to= "Tile_position", values_to= "Coral") 
+View(corals.2021_long)
+```
+
+
+```{r}
+mean(corals.2021_wide$All.Corals)
+# 0.6197183
+
+sd(corals.2021_wide$All.Corals)
+# 1.06885
+
+range(corals.2021_wide$All.Corals)
+# [1] 0 6
+
+
+corals.2021_wide %>%
+  group_by(Treatment) %>%
+  summarize(sample.size= n())
+# 
+# Caged	92		
+# Partial	32		
+# Uncaged	89	
+
+
+corals.2021_wide %>%
+  group_by(Treatment) %>%
+  summarize(mean.corals = mean(All.Corals),
+            sd=sd(All.Corals))
+
+# Caged	0.5760870		
+# Partial	0.9687500		
+# Uncaged	0.5393258	
+```
+
+
+# Fishes + Sharks
+```{r}
+load(file = "../../dovs/data/created/fish.site.tiles.average.RData") # fish.site.tiles.average
+load("../../bruvs/data/created/mean.sum.shark.abundance.tiles.RData") # mean.shark.abundance.tiles
+load("../../grazing/data/bite.data.RData") # herbivore.bites.site
+
+load("../../dovs/data/created/corallivore.site.Rdata") # corallivore_site
+#corals.2021_wide # data to add to
+
+
+
+# Make the names match
+test <- corals.2021_wide %>%
+  mutate(Tile.Site= ifelse(Site == "Il lubine", "Il Lubine",
+                            ifelse(Site == "Il de rats", "Il de rats",
+                                   ifelse(Site == "Nelson", "Nelson",
+                                   ifelse(Site == "Middle Brother", "Middle Brother",
+                                          ifelse(Site == "Il Anglaise Lagoon", "Salomon lagoon",
+                                                 ifelse(Site == "Il Anglaise Seaward", "Salomon seaward",
+                                                        ifelse(Site == "Il Poule Lagoon", "Peros Banhos Lagoon", "Peros Banhos Seaward"))))))))
+
+
+# Make the names match
+test2 <- herbivore.bites.site %>%
+  mutate(Tile.Site= ifelse(Site == "Il Lubine", "Il Lubine",
+                            ifelse(Site == "Il de rats", "Il de rats",
+                                   ifelse(Site == "Nelson", "Nelson",
+                                   ifelse(Site == "Middle Brother", "Middle Brother",
+                                          ifelse(Site == "Il Anglaise Lagoon", "Salomon lagoon",
+                                                 ifelse(Site == "Il Anglaise Seaward", "Salomon seaward","Peros Banhos Seaward"))))))) %>%
+  dplyr::select(-c(Site))
+
+  
+
+
+# Join shark abundance and fish 
+consumer.metadata <- fish.site.tiles.average %>% 
+  mutate(Shark_Abundance= ifelse(Atoll %in% "Egmont", "High", 
+                                 ifelse(Atoll %in% "Salomon", "Medium", "Low"))) %>% 
+  mutate(Shark_Sum_Abundance= ifelse(Atoll %in% "Egmont", 6.9, 
+                                     ifelse(Atoll %in% "Salomon", 4.8, 
+                                            ifelse(Atoll %in% "Peros Banhos", 3.8, 
+                                                   ifelse(Atoll %in% "Brothers", 2.9, 3.1)))))
+
+  
+  
+# Join the dataframes
+corals.fishes_wide <- left_join(test, consumer.metadata,  by="Tile.Site") %>%
+  left_join(test2, by="Tile.Site") %>%
+  left_join(corallivore_site,  by="Tile.Site")
+save(corals.fishes_wide, file="../data/created-data/corals.fishes_wide.Rdata")
+
+
+# Create a long dataframe
+corals.fishes_long <- corals.fishes_wide %>%
+  pivot_longer(-c(Date:Tile_Treatment, All.Corals:corallivore), names_to= "Tile_position", values_to= "Coral")
+```
+
+
+Looks good! 11April2023

@@ -1,0 +1,8 @@
+"0","# Coral Net"
+"0","data <- read.csv(""../data/raw-data/annotations.csv"","
+"0","                      stringsAsFactors = FALSE,na.strings=c("""",""NA""))"
+"0","# Fish and Sharks"
+"0","load(file = ""../../dovs/data/created/fish.site.tiles.average.RData"") # fish.site.tiles.average"
+"0","load(""../../bruvs/data/created/mean.sum.shark.abundance.tiles.RData"") # mean.shark.abundance.tiles"
+"0","load(""../../grazing/data/bite.data.RData"") # herbivore.bites.site"
+"0",""

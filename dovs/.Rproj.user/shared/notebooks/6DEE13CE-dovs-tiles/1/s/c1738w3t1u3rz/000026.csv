@@ -1,0 +1,12 @@
+"0","# Kyphosidae (dont exist?) (yes all zeros)"
+"0","dovs.long.tiles %>%"
+"0","  filter(Family == ""Kyphosidae"") %>%"
+"0"," group_by(OpCode_transect, Tile.Site, Atoll) %>% "
+"0","  summarize(sum= sum(Count))%>%"
+"0","  # sum up all the fish on each transect"
+"0","  ggplot(aes(x=Tile.Site, y=sum, color=Atoll)) + "
+"0","  geom_boxplot(size=1.5) +"
+"0","  theme_pubr(base_size = 16) +"
+"0","  ylab(""Kyphosidae (no./150m2)"") "
+"1","`summarise()` has grouped output by 'OpCode_transect', 'Tile.Site'. You can override using the `.groups` argument.
+"

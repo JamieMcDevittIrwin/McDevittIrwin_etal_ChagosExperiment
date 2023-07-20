@@ -1,0 +1,102 @@
+"0","knitr::opts_chunk$set(echo = FALSE)"
+"0","library(tidyverse);library(ggpubr);library(reshape2);library(stringr);library(vegan);library(plotly);library(linguisticsdown);library(lme4);library(ggvegan);library(indicspecies);library(janitor);library(ade4);library(picante);library(FD);library(dummies);library(mvabund);library(cowplot)"
+"2","
+Attaching package: ‘reshape2’
+
+"
+"2","The following object is masked from ‘package:tidyr’:
+
+    smiths
+
+"
+"2","Registered S3 method overwritten by 'htmlwidgets':
+  method           from         
+  print.htmlwidget tools:rstudio
+"
+"2","
+Attaching package: ‘plotly’
+
+"
+"2","The following object is masked from ‘package:MASS’:
+
+    select
+
+"
+"2","The following object is masked from ‘package:ggplot2’:
+
+    last_plot
+
+"
+"2","The following object is masked from ‘package:stats’:
+
+    filter
+
+"
+"2","The following object is masked from ‘package:graphics’:
+
+    layout
+
+"
+"2","Loading required package: ape
+"
+"2","
+Attaching package: ‘ape’
+
+"
+"2","The following object is masked from ‘package:ggpubr’:
+
+    rotate
+
+"
+"2","Loading required package: nlme
+"
+"2","
+Attaching package: ‘nlme’
+
+"
+"2","The following object is masked from ‘package:lme4’:
+
+    lmList
+
+"
+"2","The following object is masked from ‘package:dplyr’:
+
+    collapse
+
+"
+"2","Loading required package: geometry
+"
+"2","dummies-1.5.6 provided by Decision Patterns
+
+"
+"2","
+Attaching package: ‘dummies’
+
+"
+"2","The following object is masked from ‘package:lme4’:
+
+    dummy
+
+"
+"2","
+********************************************************
+"
+"2","Note: As of version 1.0.0, cowplot does not change the
+"
+"2","  default ggplot2 theme anymore. To recover the previous
+"
+"2","  behavior, execute:
+  theme_set(theme_cowplot())
+"
+"2","********************************************************
+
+"
+"2","
+Attaching package: ‘cowplot’
+
+"
+"2","The following object is masked from ‘package:ggpubr’:
+
+    get_legend
+
+"

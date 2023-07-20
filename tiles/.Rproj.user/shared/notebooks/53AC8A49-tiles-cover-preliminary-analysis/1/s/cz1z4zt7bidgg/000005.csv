@@ -1,0 +1,8 @@
+"0","# plot percent cover"
+"0","p_treatment <- cover_long %>%"
+"0","  ggplot(aes(x=as.factor(Treatment), y=Percent.Cover, fill=Category)) + "
+"0","  geom_bar(aes(), stat=""identity"", position=""fill"") +"
+"0","  theme_pubr()+ "
+"0","  labs( "
+"0","       x = ""Treatment"")"
+"0","p_treatment"

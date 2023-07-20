@@ -1,0 +1,6 @@
+"0",""
+"0","model_fish <- ggarrange(p_model_meso, "
+"0","          p_model_herbs, "
+"0","          p_model_corallivores, "
+"0","          ncol=1, nrow=3)"
+"0","model_fish"

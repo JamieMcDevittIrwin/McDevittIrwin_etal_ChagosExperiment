@@ -1,0 +1,4 @@
+"0",""
+"0","# Model Diagnostics"
+"0","m5_simresids <- simulateResiduals(m5)"
+"0","plot(m5_simresids) # all good"

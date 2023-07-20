@@ -1,0 +1,17 @@
+"0","library(broom); library(broom.mixed); library(dotwhisker)
+if (requireNamespace(""broom.mixed"") && requireNamespace(""dotwhisker"")) {
+t1 <- broom.mixed::tidy(m3, conf.int = TRUE)
+t1 <- transform(t1,
+term=sprintf(""%s.%s"", component, term))
+if (packageVersion(""dotwhisker"")>""0.4.1"") {
+dw <- dwplot(t1, model=m3)
+} else {
+m3$coefficients <- TRUE ## hack!
+dw <- dwplot(m3,by_2sd=FALSE)
+}
+print(dw+geom_vline(xintercept=0,lty=2))
+}
+"
+"2","Error in dwplot(t1, model = m3) : 
+  argument 2 matches multiple formal arguments
+"

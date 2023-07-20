@@ -1,0 +1,31 @@
+"0","##########"
+"0","# Herbivores"
+"0","##########"
+"0",""
+"0","# Scaridae"
+"0","p_scaridae <- dovs.long %>%"
+"0","  filter(Family == ""Scaridae"") %>%"
+"0","  group_by(Shark_Sum_Abundance, OpCode_transect, Atoll) %>%"
+"0","  summarize(sum= sum(Abundance))%>%"
+"0","  ggplot(aes(x= Shark_Sum_Abundance, y=sum)) + "
+"0","  geom_point(size=3) +"
+"0","  geom_smooth(method=""lm"")+"
+"0","  ylab(expression(paste(""Fish Density (no./150"", m^2, "")""))) +"
+"0","  theme_pubr(base_size = 22) +"
+"0","  theme(legend.position= 'none',"
+"0","        axis.title.y = element_text(size=28),"
+"0","        axis.text.y = element_text(size=26),"
+"0","       # axis.title.x = element_blank(),"
+"0","      #  axis.text.x = element_blank(),"
+"0","        title = element_text(size=28)) +"
+"0",""
+"0","  ggtitle(""Scaridae"")"
+"1","[1m[33mError[39m in [38;5;242m`h()`[39m:[22m
+[33m![39m Problem with `filter()` input `..1`.
+[34mℹ[39m Input `..1` is `Family == ""Scaridae""`.
+[31mx[39m object 'Family' not found
+Backtrace:
+[90m  1. [39m... %>% ggplot(aes(x = Shark_Sum_Abundance, y = sum))
+[90m 10. [39m[1mbase[22m::.handleSimpleError(...)
+[90m 11. [39m[1mdplyr[22m h(simpleError(msg, call))
+"

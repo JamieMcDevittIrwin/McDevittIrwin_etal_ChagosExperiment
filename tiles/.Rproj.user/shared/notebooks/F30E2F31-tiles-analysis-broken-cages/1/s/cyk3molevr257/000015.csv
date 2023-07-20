@@ -1,0 +1,5 @@
+"0","load(""../data/created-data/corals.fishes_wide.Rdata"") # corals.fishes_wide"
+"0","load(""../data/created-data/broad.cover_wide"") # cover_wide"
+"2","Warning: cannot open compressed file '../data/created-data/broad.cover_wide', probable reason 'No such file or directory'"
+"2","Error in readChar(con, 5L, useBytes = TRUE) : cannot open the connection
+"

@@ -1,0 +1,11 @@
+"0","performance::r2(m2)  
+"
+"2","Warning: mu of 0.8 is too close to zero, estimate of random effect variances may
+  be unreliable."
+"1","[34m# R2 for Mixed Models
+
+[39m"
+"1","  Conditional R2: 0.410
+     Marginal R2: 0.064"
+"1","
+"

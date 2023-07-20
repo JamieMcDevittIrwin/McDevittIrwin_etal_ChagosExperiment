@@ -1,0 +1,7 @@
+"0","# How much of the data is zero?"
+"0","100*sum(corals.cover$All.Corals == 0)/nrow(corals.cover) # 65.25822"
+"1","[1]"
+"1"," 65.25822"
+"1","
+"
+"0","hist(corals.cover$All.Corals) # very zero inflated"

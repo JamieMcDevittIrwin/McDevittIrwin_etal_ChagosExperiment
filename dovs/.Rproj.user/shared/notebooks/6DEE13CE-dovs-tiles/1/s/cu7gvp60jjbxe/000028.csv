@@ -1,0 +1,10 @@
+"0","# Chaetodontidae 
+chaet.df <- dovs.long.tiles %>%
+  filter(Family %in% c(""Chaetodontidae"")) %>%
+  group_by(OpCode_transect, Shark_Abundance, Shark_Sum_Abundance, Atoll, OpCode_Site, OpCode) %>%
+  summarize(Chaetodontidae_sum= sum(Count))
+"
+"1","`summarise()` has grouped output by 'OpCode_transect', 'Shark_Abundance', 'Shark_Sum_Abundance', 'Atoll', 'OpCode_Site'. You can override using the `.groups` argument.
+"
+"0",""
+"0","hist(chaet.df$Chaetodontidae_sum)"

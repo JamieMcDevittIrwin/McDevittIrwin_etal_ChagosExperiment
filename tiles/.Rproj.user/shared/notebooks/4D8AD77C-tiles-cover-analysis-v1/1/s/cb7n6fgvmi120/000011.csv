@@ -1,0 +1,4 @@
+"0",""
+"0","ggsave(p_tiles.cca.effectsize,"
+"0","       file=""../figures/cca-effect-size.png"","
+"0","       height=5, width=7)"

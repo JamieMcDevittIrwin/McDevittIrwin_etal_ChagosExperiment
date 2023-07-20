@@ -1,0 +1,16 @@
+"0","library(tidyverse)"
+"0","library(vegan)"
+"0","library(ggpubr)"
+"0","library(dplyr)"
+"0","library(ggplot2)"
+"0","library(vegan)"
+"0","remotes::install_github(""jfq3/ggordiplots"")"
+"2","Skipping install of 'ggordiplots' from a github remote, the SHA1 (2d9f0530) has not changed since last install.
+  Use `force = TRUE` to force installation
+"
+"0","library(ggordiplots)"
+"0","library(plotly)"
+"0","library(effsize)"
+"0","library(glmmTMB)"
+"0","library(DHARMa)"
+"0","library(indicspecies)"

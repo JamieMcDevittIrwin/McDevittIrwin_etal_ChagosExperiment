@@ -1,0 +1,7 @@
+"0","# How much of the data is zero?
+100*sum(graze.corals.cover$All.Corals == 0)/nrow(graze.corals.cover) # 65.05376
+"
+"1","[1]"
+"1"," 65.05376"
+"1","
+"

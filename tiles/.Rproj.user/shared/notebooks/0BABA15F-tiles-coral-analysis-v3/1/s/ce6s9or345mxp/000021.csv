@@ -1,0 +1,7 @@
+"0","# How much of the data is zero?
+100*sum(corals.2021_wide$Side == 0)/nrow(corals.2021_wide) #91.07981
+"
+"1","[1]"
+"1"," 91.07981"
+"1","
+"

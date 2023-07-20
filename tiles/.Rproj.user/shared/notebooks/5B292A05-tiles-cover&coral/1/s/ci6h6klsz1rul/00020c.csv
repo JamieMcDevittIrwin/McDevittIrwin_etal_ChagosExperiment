@@ -1,0 +1,8 @@
+"0",""
+"0","# Algae"
+"0","# Turf"
+"0","p_algae <- ggplot(algae.df, aes(x, predicted)) + "
+"0","  geom_line(size=1.5) +  theme_pubr(base_size=16) +"
+"0","  labs(x=""Macroalgae"", y="""") + "
+"0","  geom_ribbon(aes(ymin=conf.low, ymax=conf.high), alpha=0.2, colour=NA)"
+"0","p_algae"

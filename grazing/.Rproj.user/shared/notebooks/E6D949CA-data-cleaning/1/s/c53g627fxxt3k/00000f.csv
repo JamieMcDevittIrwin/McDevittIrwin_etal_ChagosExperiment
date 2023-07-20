@@ -1,0 +1,64 @@
+"0","library(ggsci)"
+"0","library(plyr)"
+"0","library(stringr)"
+"0","library(colorspace)"
+"0","library(egg)"
+"2","Loading required package: gridExtra
+"
+"2","Loading required package: ggplot2
+"
+"0","library(ggpubr)"
+"2","
+Attaching package: ‘ggpubr’
+
+"
+"2","The following object is masked from ‘package:egg’:
+
+    ggarrange
+
+"
+"2","The following object is masked from ‘package:plyr’:
+
+    mutate
+
+"
+"0","library(fishualize)"
+"0","library(tidyr)  # Formatting data for analysis"
+"0","library(dplyr)  # Manipulating data"
+"2","
+Attaching package: ‘dplyr’
+
+"
+"2","The following object is masked from ‘package:gridExtra’:
+
+    combine
+
+"
+"2","The following objects are masked from ‘package:plyr’:
+
+    arrange, count, desc, failwith,
+    id, mutate, rename, summarise,
+    summarize
+
+"
+"2","The following objects are masked from ‘package:stats’:
+
+    filter, lag
+
+"
+"2","The following objects are masked from ‘package:base’:
+
+    intersect, setdiff, setequal,
+    union
+
+"
+"0","library(ggplot2)  # Visualising results"
+"0","library(readr)  # Manipulating data"
+"0","library(tibble)"
+"0","library(vegan)"
+"2","Loading required package: permute
+"
+"2","Loading required package: lattice
+"
+"2","This is vegan 2.6-4
+"

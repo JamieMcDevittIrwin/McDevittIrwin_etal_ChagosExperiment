@@ -1,0 +1,1 @@
+{"frames":[{"character_number":0,"end_character_number":0,"end_line_number":0,"file":"","func":"left_join(dovs.long.traits, bornstein, by = \"Genus_species\")","line_number":0}],"message":"Error in left_join(dovs.long.traits, bornstein, by = \"Genus_species\") : \n  object 'dovs.long.traits' not found\n"}

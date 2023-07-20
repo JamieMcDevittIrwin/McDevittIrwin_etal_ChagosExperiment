@@ -1,0 +1,11 @@
+"0","library(GLMMadaptive) # mixed models that are zero inflated 
+"
+"2","
+Attaching package: ‘GLMMadaptive’
+
+"
+"2","The following object is masked from ‘package:lme4’:
+
+    negative.binomial
+
+"

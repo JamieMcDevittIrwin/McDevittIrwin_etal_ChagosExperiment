@@ -1,0 +1,37 @@
+"0","# Create a wide dataframe"
+"0","corals.2021_wide <- corals.2021 %>%"
+"0","  pivot_wider(names_from = Tile_position, values_from= Coral, values_fill=0) %>%"
+"0","  dplyr::select(-c(Tube_ID:Notes, ""NA"")) %>%"
+"0","  group_by(Date, Island,Transect, Site, Tile, Treatment, Tile_Treatment) %>%"
+"0","  summarise_each(funs(sum)) %>% # this adds up each row with the same tile/treatment"
+"0","  filter(Tile_Treatment != ""14.Uncaged"") %>% # filter out 14 uncaged because it was found flipped and it looked like the bottom and the top were the same in terms of percent cover"
+"0","  mutate(All.Corals = Top + Bottom + Side) "
+"2","Warning: `summarise_each_()` was deprecated in dplyr 0.7.0.
+Please use `across()` instead."
+"2","Warning: `funs()` was deprecated in dplyr 0.8.0.
+Please use a list of either functions or lambdas: 
+
+  # Simple named list: 
+  list(mean = mean, median = median)
+
+  # Auto named with `tibble::lst()`: 
+  tibble::lst(mean, median)
+
+  # Using lambdas
+  list(~ mean(., trim = .2), ~ median(., na.rm = TRUE))"
+"0","dim(corals.2021_wide)"
+"1","[1]"
+"1"," 213"
+"1","  11"
+"1","
+"
+"0","View(corals.2021_wide)"
+"0",""
+"0",""
+"0","save(corals.2021_wide, file=""../data/created-data/corals.2021_wide.Rdata"")"
+"0",""
+"0",""
+"0","# Create a long dataframe"
+"0","corals.2021_long <- corals.2021_wide %>%"
+"0","  pivot_longer(-c(Date:Tile_Treatment, All.Corals), names_to= ""Tile_position"", values_to= ""Coral"") "
+"0","View(corals.2021_long)"

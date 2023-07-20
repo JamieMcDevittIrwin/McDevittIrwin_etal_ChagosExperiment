@@ -1,0 +1,7 @@
+"0","# Load data sheets and join together----"
+"0","AGB.df <- read.csv(""../data/DATA-grazing-videos.xlsx - Raw-data-AGB.csv"")"
+"0","CMT.df <- read.csv(""../data/DATA-grazing-videos.xlsx - Raw-data-CMT-JMI.csv"")"
+"0","GZD.df <- read.csv(""../data/DATA-grazing-videos.xlsx - Raw-data-GZD.csv"")"
+"0","field.data <- read.csv(""../data/DATA-grazing-videos.xlsx - Field-data.csv"")"
+"0","benthic.data <- read.csv(""../data/annotations.csv"")"
+"0","load(""../../bruvs/data/created/mean-sum-shark-abundance.RData"") # mean_sum_shark_abundance"

@@ -1,0 +1,5 @@
+"0",""
+"0","ggplot(broad.cover_wide, aes(x=as.factor(Treatment), y= CCA.All)) + "
+"0","  geom_boxplot() +"
+"0","  theme_pubr()+ "
+"0","  labs(x = ""Treatment"")"

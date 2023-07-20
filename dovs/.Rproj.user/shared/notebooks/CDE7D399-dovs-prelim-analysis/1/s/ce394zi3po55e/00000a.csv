@@ -1,0 +1,48 @@
+"0","# Trophic Level
+p_trophic <- trophic.long.reef %>%
+  group_by(OpCode_transect, Shark_Abundance, Atoll, OVERALL.coarse) %>%
+  summarize(sum= sum(Abundance))%>%
+  filter(!sum > 200) %>%
+  filter(OVERALL.coarse != c(""#N/A"", """",""Cleaner""))%>%
+  ggplot(aes(x=Shark_Abundance, y=sum, colour=Shark_Abundance)) + 
+    geom_boxplot(outlier.shape=NA, 
+                 position = position_dodge(width=0.5),
+                 size=1.5) +  
+  geom_point(size=3,
+             position = position_dodge(width=0.5)) +
+#  geom_violin(fill='white') + 
+# stat_summary(fun.data=mean_sdl, mult=1, size=2,
+#                 geom=""pointrange"",fun.ymin=0,
+#position=position_dodge(width=0.5)) +
+  facet_wrap(~OVERALL.coarse,
+             scales=""free_y"")+
+  theme_pubr() +
+  theme(legend.position= 'none',
+        strip.text.x = element_text(size=28),
+        axis.title.y = element_text(size=28),
+        axis.text.y = element_text(size=24),
+        axis.title.x = element_blank(),
+        axis.text.x = element_text(size=24),
+        plot.title = element_text(size=24)) +
+  ylab(""Fish Density (no./150m2)"") +
+#  scale_x_discrete(labels=names2) +
+#  ggtitle(""Trophic Group"") +
+  scale_colour_manual(values=c(""maroon2"",""purple3"",""turquoise3""),
+                    limits=c(""High"",""Medium"", ""Low""))
+"
+"2","longer object length is not a multiple of shorter object length"
+"2","longer object length is not a multiple of shorter object length"
+"2","longer object length is not a multiple of shorter object length"
+"2","longer object length is not a multiple of shorter object length"
+"2","longer object length is not a multiple of shorter object length"
+"2","longer object length is not a multiple of shorter object length"
+"2","longer object length is not a multiple of shorter object length"
+"2","longer object length is not a multiple of shorter object length"
+"2","longer object length is not a multiple of shorter object length"
+"2","longer object length is not a multiple of shorter object length"
+"2","longer object length is not a multiple of shorter object length"
+"2","longer object length is not a multiple of shorter object length"
+"2","longer object length is not a multiple of shorter object length"
+"2","longer object length is not a multiple of shorter object length"
+"0","p_trophic"
+"0",""

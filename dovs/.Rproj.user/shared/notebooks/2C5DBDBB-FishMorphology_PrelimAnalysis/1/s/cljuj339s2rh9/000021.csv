@@ -1,0 +1,46 @@
+"0","
+
+# Caudal Fin height
+p_cfh <- ggplot(FishMorph, 
+            aes(Atoll, Caudal_fin_height_cm_norm, colour=Shark_Abundance))
+p_cfh <- p_cfh + geom_boxplot(size=1.5)+
+  facet_wrap( .~Species, labeller= names, scales=""free"") + 
+  scale_colour_manual(values=c(""maroon2"",""purple3"",""turquoise3""),
+                    limits=c(""High"",""Medium"", ""Low""))+  theme_pubr() +
+  theme(legend.position= 'none',
+        strip.text.x = element_text(face = ""italic"", size=22),
+        axis.title.y = element_text(size=34),
+        axis.text.y = element_text(size=30),
+        axis.title.x = element_blank(),
+        axis.text.x = element_blank()) +
+  labs(y= ""Caudal Fin Height (cm)"")
+p_cfh
+
+ggsave(""../figures/CaudalFinHeight.pdf"", 
+       plot=p_cfh,
+       height=7,
+       width=13)
+
+# Eye Diameter
+p_ed <- ggplot(FishMorph, 
+            aes(Atoll, Eye_diameter_cm_norm, 
+                colour=Shark_Abundance))  +
+  geom_boxplot(size=1.5)+
+  facet_wrap( .~Species, labeller= names, scales=""free"") + 
+  scale_colour_manual(values=c(""maroon2"",""purple3"",""turquoise3""),
+                    limits=c(""High"",""Medium"", ""Low""))+ 
+  theme_pubr() +
+  theme(legend.position= 'none',
+        strip.text.x = element_text(face = ""italic"", size=22),
+        axis.title = element_text(size=30),
+        axis.text.x = element_text(size=20),
+        axis.text.y= element_text(size=20)) +
+  labs(y= ""Eye Diameter (cm)"", x= ""Atoll"") 
+
+p_ed
+"
+"0",""
+"0","ggsave(""../figures/EyeDiameter.pdf"", "
+"0","       plot=p_ed,"
+"0","       height=7,"
+"0","       width=15)"

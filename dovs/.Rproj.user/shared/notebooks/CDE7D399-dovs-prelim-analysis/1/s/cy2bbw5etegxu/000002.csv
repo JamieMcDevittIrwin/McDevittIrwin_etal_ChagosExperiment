@@ -1,0 +1,92 @@
+"0","# Body Size
+S6 <- traits.long.reef %>%
+  filter(BodySize== ""S6"") %>%
+  select(Full.Species.Name, Abundance, OpCode_transect, Atoll) 
+
+S6.wide <- S6 %>%
+  spread(Full.Species.Name, Abundance)
+S6.wide.data <- S6.wide %>% 
+  select(-Atoll) %>%
+  filter_at(vars(-OpCode_transect), any_vars(. != 0)) %>%
+  column_to_rownames(""OpCode_transect"")
+
+# subset metadata since we dropped some transects
+S6.meta <- subset(dovs.reef.metadata, OpCode_transect %in% rownames(S6.wide.data))
+
+# Is there a significant difference in composition across shark abundance?
+adon.results<-adonis(S6.wide.data ~ Shark_Abundance, method=""bray"",perm=999, data=S6.meta)
+print(adon.results) # 0.07041
+"
+"1","
+Call:
+"
+"1","adonis(formula = S6.wide.data ~ Shark_Abundance, data = S6.meta, "
+"1"," "
+"1","    permutations = 999, method = ""bray"")"
+"1"," "
+"1","
+
+"
+"1","Permutation: free
+Number of permutations: 999
+"
+"1","
+"
+"1","Terms added sequentially (first to last)
+"
+"1","
+"
+"1","               "
+"1"," Df"
+"1"," SumsOfSqs"
+"1"," MeanSqs"
+"1"," F.Model"
+"1","      R2"
+"1","
+Shark_Abundance"
+"1","  2"
+"1","    1.7021"
+"1"," 0.85105"
+"1","  3.1415"
+"1"," 0.17807"
+"1","
+Residuals      "
+"1"," 29"
+"1","    7.8563"
+"1"," 0.27091"
+"1","        "
+"1"," 0.82193"
+"1","
+Total          "
+"1"," 31"
+"1","    9.5584"
+"1","        "
+"1","        "
+"1"," 1.00000"
+"1","
+"
+"1","               "
+"1"," Pr(>F)"
+"1","   "
+"1","
+Shark_Abundance"
+"1","   0.01"
+"1"," **"
+"1","
+Residuals      "
+"1","       "
+"1","   "
+"1","
+Total          "
+"1","       "
+"1","   "
+"1","
+"
+"1","---
+Signif. codes:  "
+"1",""
+"1","
+"
+"1","0 ‘***’ 0.001 ‘**’ 0.01 ‘*’ 0.05 ‘.’ 0.1 ‘ ’ 1"
+"1","
+"

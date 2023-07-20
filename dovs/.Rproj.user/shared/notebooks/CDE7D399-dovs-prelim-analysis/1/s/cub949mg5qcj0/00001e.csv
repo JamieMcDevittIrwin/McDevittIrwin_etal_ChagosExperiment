@@ -1,0 +1,8 @@
+"0",""
+"0",""
+"0",""
+"0","p_all_traits <- ggarrange(p_trophic, p_agg, p_size, p_activ, p_water, p_home, ncol=3, nrow=2)"
+"0","ggsave(""../figures/Valeriano_traits.pdf"", "
+"0","       plot=p_all_traits,"
+"0","       height=10,"
+"0","       width=19)"

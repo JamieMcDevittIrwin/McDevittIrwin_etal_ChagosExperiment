@@ -1,0 +1,15 @@
+"0",""
+"0","# Plot"
+"0","library(effects)"
+"2","Loading required package: carData
+"
+"2","Use the command
+    lattice::trellis.par.set(effectsTheme())
+  to customize lattice options for effects plots.
+See ?effectsTheme for details.
+"
+"0","effects_ok <- (requireNamespace(""effects"") && getRversion() >= ""3.6.0"")"
+"0","if (effects_ok) {"
+"0","(ae <- allEffects(m1))"
+"0","plot(ae)"
+"0","}"

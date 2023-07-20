@@ -1,0 +1,30 @@
+"0","library(tidyverse)"
+"0","library(vegan)"
+"0","library(ggpubr)"
+"0","library(dplyr)"
+"0","library(ggplot2)"
+"0","library(vegan)"
+"0","library(ggordiplots)"
+"0","library(plotly)"
+"0","library(piecewiseSEM)"
+"2","
+  This is piecewiseSEM version 2.3.0.
+
+
+  Questions or bugs can be addressed to <LefcheckJ@si.edu>.
+"
+"0","library(lme4)"
+"2","Loading required package: Matrix
+"
+"2","
+Attaching package: ‘Matrix’
+
+"
+"2","The following objects are masked from ‘package:tidyr’:
+
+    expand, pack, unpack
+
+"
+"0","library(glmmTMB)"
+"0","library(DHARMa)"
+"0","library(emmeans)"

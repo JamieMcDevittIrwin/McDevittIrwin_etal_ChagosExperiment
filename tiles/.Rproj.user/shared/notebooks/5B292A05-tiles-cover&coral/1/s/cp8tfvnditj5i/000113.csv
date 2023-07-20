@@ -1,0 +1,4 @@
+"0","plot(psem.model, title= ""Caged"")"
+"2","Warning: Recycling array of length 1 in vector-array arithmetic is deprecated.
+  Use c() or as.vector() instead.
+"

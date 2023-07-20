@@ -1,0 +1,7 @@
+"0",""
+"0",""
+"0","p_mixed.model <- ggarrange(p_graze_treatment,"
+"0","                           p_graze, "
+"0","                           p_cca, p_algae, p_turf, common.legend=TRUE,"
+"0","                           nrow=)"
+"0","p_mixed.model"

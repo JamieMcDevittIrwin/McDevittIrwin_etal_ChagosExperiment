@@ -1,0 +1,24 @@
+"0","# Scaridae
+p_scaridae <- dovs.long.reef %>%
+  filter(Family == ""Scaridae"") %>%
+  group_by(OpCode_transect, Shark_Abundance, Atoll) %>%
+  summarize(sum= sum(Abundance))%>%
+  ggplot(aes(x= Atoll, y=sum, colour=Shark_Abundance)) + 
+  geom_boxplot(size=1.5) + 
+  geom_point(size=3) +
+  ylab(expression(paste(""Fish Density (no./150"", m^2, "")""))) +
+  theme_pubr() +
+  theme(legend.position= 'none',
+        axis.title.y = element_text(size=28),
+        axis.text.y = element_text(size=26),
+        axis.title.x = element_blank(),
+        axis.text.x = element_blank(),
+        title = element_text(size=28)) +
+  scale_colour_manual(values=c(""maroon2"",""purple3"",""turquoise3""),
+                    limits=c(""High"",""Medium"", ""Low""))+
+  ggtitle(""Scaridae"")
+"
+"2","`summarise()` regrouping output by 'OpCode_transect', 'Shark_Abundance' (override with `.groups` argument)
+"
+"0","p_scaridae"
+"0",""

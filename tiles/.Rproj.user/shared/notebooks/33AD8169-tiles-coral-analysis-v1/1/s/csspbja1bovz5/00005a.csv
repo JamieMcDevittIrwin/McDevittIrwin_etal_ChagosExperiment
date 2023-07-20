@@ -1,0 +1,10 @@
+"0","############"
+"0","# Overall Corals"
+"0","############"
+"0","meancorals.treatment <- corals.2021_long %>%"
+"0","  group_by(Treatment) %>%"
+"0","  summarise(sum= sum(Coral), "
+"0","            mean=mean(Coral), "
+"0","            se=std.error(Coral))"
+"2","Error in group_by(., Treatment) : object 'corals.2021_long' not found
+"

@@ -1,0 +1,9 @@
+"0","corallivore_site <- corallivore_data %>%
+   group_by(OpCode_transect, Tile.Site) %>% 
+  summarize(sum= sum(Count)) %>% # sum up all the corallivore species abundance per transect
+  group_by(Tile.Site) %>%
+  summarize(mean=mean(sum)) %>%
+  dplyr::rename(""corallivore""= ""mean"")
+"
+"1","`summarise()` has grouped output by 'OpCode_transect'. You can override using the `.groups` argument.
+"

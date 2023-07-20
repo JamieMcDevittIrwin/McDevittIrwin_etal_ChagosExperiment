@@ -1,0 +1,4 @@
+"0","corals.2021 %>%"
+"0","  filter(Tile_side. %in% c(""Top?"", ""Top"", ""Side/Top"", ""Top/side"", ""Side/top"")) %>%"
+"0","  group_by(Treatment) %>%"
+"0","  summarize(Coral.sum = sum(Coral, na.rm= TRUE))"

@@ -1,0 +1,5 @@
+"0","save(corals.2021_wide, ""../data/corals.2021_wide.Rdata"")
+"
+"2","Error in save(corals.2021_wide, ""../data/corals.2021_wide.Rdata"") : 
+  object ‘../data/corals.2021_wide.Rdata’ not found
+"

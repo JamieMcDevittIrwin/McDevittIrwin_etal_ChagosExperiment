@@ -1,0 +1,105 @@
+"0","# load libraries"
+"0","library(plyr);library(dplyr);library(ggplot2);library(ggpubr);library(tidyr);library(car);library(MASS);library(pscl);library(lmtest);library(multcomp);library(sjPlot);library(lsmeans);library(rcompanion);library(ggsignif);library(stringr);library(reshape2)"
+"2","
+Attaching package: ‘dplyr’
+
+"
+"2","The following objects are masked from ‘package:plyr’:
+
+    arrange, count, desc, failwith, id, mutate, rename, summarise, summarize
+
+"
+"2","The following objects are masked from ‘package:stats’:
+
+    filter, lag
+
+"
+"2","The following objects are masked from ‘package:base’:
+
+    intersect, setdiff, setequal, union
+
+"
+"2","
+Attaching package: ‘ggpubr’
+
+"
+"2","The following object is masked from ‘package:plyr’:
+
+    mutate
+
+"
+"2","Loading required package: carData
+"
+"2","
+Attaching package: ‘car’
+
+"
+"2","The following object is masked from ‘package:dplyr’:
+
+    recode
+
+"
+"2","
+Attaching package: ‘MASS’
+
+"
+"2","The following object is masked from ‘package:dplyr’:
+
+    select
+
+"
+"2","Classes and Methods for R developed in the
+Political Science Computational Laboratory
+Department of Political Science
+Stanford University
+Simon Jackman
+hurdle and zeroinfl functions by Achim Zeileis
+"
+"2","Loading required package: zoo
+"
+"2","
+Attaching package: ‘zoo’
+
+"
+"2","The following objects are masked from ‘package:base’:
+
+    as.Date, as.Date.numeric
+
+"
+"2","Loading required package: mvtnorm
+"
+"2","Loading required package: survival
+"
+"2","Loading required package: TH.data
+"
+"2","
+Attaching package: ‘TH.data’
+
+"
+"2","The following object is masked from ‘package:MASS’:
+
+    geyser
+
+"
+"2","Learn more about sjPlot with 'browseVignettes(""sjPlot"")'.
+"
+"2","Loading required package: emmeans
+"
+"2","The 'lsmeans' package is now basically a front end for 'emmeans'.
+Users are encouraged to switch the rest of the way.
+See help('transition') for more information, including how to
+convert old 'lsmeans' objects and scripts to work with 'emmeans'.
+"
+"2","Registered S3 method overwritten by 'data.table':
+  method           from
+  print.data.table     
+"
+"2","
+Attaching package: ‘reshape2’
+
+"
+"2","The following object is masked from ‘package:tidyr’:
+
+    smiths
+
+"

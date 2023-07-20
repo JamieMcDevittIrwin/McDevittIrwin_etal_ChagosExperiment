@@ -1,0 +1,7 @@
+"0",""
+"0",""
+"0","# plot percent cover"
+"0","ggplot(cover_wide, aes(x=as.factor(Treatment), y= `_CO`)) + "
+"0","  geom_boxplot() +"
+"0","  theme_pubr()+ "
+"0","  labs(x = ""Treatment"")"

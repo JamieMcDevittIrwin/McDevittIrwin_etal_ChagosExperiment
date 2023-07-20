@@ -1,0 +1,13 @@
+"1","
+
+---
+Individual R-squared:
+
+"
+"1"," "
+"1","No independence claims present. Tests of directed separation not possible.
+"
+"0","coefs(psem.model)"
+"2","Warning: Recycling array of length 1 in vector-array arithmetic is deprecated.
+  Use c() or as.vector() instead.
+"

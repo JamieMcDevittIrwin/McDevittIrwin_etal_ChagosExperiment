@@ -1,0 +1,371 @@
+---
+title: "Preliminary Analysis"
+author: "Jamie McDevitt-Irwin"
+date: '2022-10-25'
+output: html_document
+---
+
+*Data Description*
+Each row is a bite by a fish (time recorded, fish recorded). We recorded all fish species (but here we filter out herbivores)
+
+35 independent gopros (5 per seven sites)
+
+
+# Packages
+```{r}
+library(ggsci)
+library(plyr)
+library(stringr)
+library(colorspace)
+library(egg)
+library(ggpubr)
+library(fishualize)
+library(tidyr)  # Formatting data for analysis
+library(dplyr)  # Manipulating data
+library(ggplot2)  # Visualising results
+library(readr)  # Manipulating data
+library(tibble)
+library(vegan)
+```
+
+
+# Load Data
+```{r cars}
+# Load data sheets and join together----
+AGB.df <- read.csv("../data/DATA-grazing-videos.xlsx - Raw-data-AGB.csv")
+CMT.df <- read.csv("../data/DATA-grazing-videos.xlsx - Raw-data-CMT-v2.csv") 
+GZD.df <- read.csv("../data/DATA-grazing-videos.xlsx - Raw-data-GZD.csv")
+MCC.df <- read.csv("../data/DATA-grazing-videos.xlsx - Raw-data-MCC.csv")
+
+
+field.data <- read.csv("../data/DATA-grazing-videos.xlsx - Field-data.csv")
+benthic.data <- read.csv("../data/annotations.csv")
+load("../../bruvs/data/created/mean.sum.shark.abundance.tiles.RData") # mean.shark.abundance.tiles
+```
+
+
+
+# Clean Benthic Data
+```{r}
+# Convert to wide
+test <- benthic.data %>%
+  group_by(Name, Atoll, Site, Quadrat) %>%
+  count(Label)
+
+test <- as.data.frame(test)
+
+test$Site.GoPro <- paste(test$Site, test$Quadrat, sep=".")
+
+
+benthic.wide <- test %>% 
+  pivot_wider(names_from = Label, 
+              values_from = n, 
+              values_fill = 0)
+
+dim(benthic.wide)
+rowSums(benthic.wide[6:23])
+
+# Filter out cover categories we don't want to include
+benthic.wide.clean <- benthic.wide %>%
+  dplyr::select(-c("*TAPE", "PVC", "OOQ")) 
+
+
+# Normalize by number of points
+df1 <- benthic.wide.clean %>% 
+  column_to_rownames(var="Site.GoPro")%>% 
+  dplyr::select(c("*CCAH":"Soft"))
+rowSums(df1) # all close to 50
+
+df2 <- decostand(df1, "total") 
+rowSums(df2) # 1
+# this creates a df with normalized cover categories
+
+# add back normalized data
+meta <- benthic.wide.clean %>%
+  select(c(Name:Site.GoPro))
+
+benthic_wide <- df2 %>%
+  rownames_to_column("Site.GoPro") %>%
+  left_join(meta, by="Site.GoPro") %>%
+  select(c(Name:Quadrat), Site.GoPro, "*CCAH":"Soft")
+
+
+
+# Add up Grazeable Substrate
+colnames(benthic_wide)
+benthic.final <- benthic_wide %>%
+  dplyr::mutate(Grazeable.substrate = c(`*CCAH` + `*EMA` + `*TURFH` + `*CCAR` + `*TURFR` + `Macro` + `Turfsa` +`ENMA_RUB` + `TurfsaR`)) %>%
+  select(Site.GoPro, Grazeable.substrate) 
+```
+Looks good! 
+
+
+# Data Wrangling
+```{r}
+###### CLEAN GRAZING DATA ######
+# Filter out AGB's in progress video
+AGB.df.v2 <- AGB.df %>%
+  filter(!(Site == "Salomon_Seaward" & GoPro == "I"))
+dim(AGB.df) # [1] 8062   14
+dim(AGB.df.v2) #  6934   14
+
+
+# Combine all the dataframes together
+grazing <- rbind(AGB.df.v2, CMT.df, GZD.df, MCC.df)
+
+# Change to factors
+grazing$Family <- as.factor(grazing$Fish.Family)
+grazing$Site <- as.factor(grazing$Site)
+grazing$Fish.ID <- as.factor(grazing$Fish.ID)
+
+# Remove unwanted columns
+drop <- names(grazing) %in% c("Date.analyzed", "Fish.description","Position","Notes",
+                           "Highlighting.reference")
+quadrat.grazing <- grazing[,!drop]
+
+# Rename column headers
+quadrat.grazing <- quadrat.grazing %>% 
+  dplyr::rename(Type = Fish.Family) %>%
+  dplyr::rename(Species = Fish.ID)
+
+#Rename w/ Latin names
+unique(quadrat.grazing$Type)
+quadrat.grazing[,"Family.Latin"] <- NA # make a new column
+quadrat.grazing$Family.Latin <- quadrat.grazing$Type
+
+unique(quadrat.grazing$Type) 
+quadrat.grazing$Family.Latin <- dplyr::recode(quadrat.grazing$Family.Latin, 
+                                              "trigger" = "Balistidae", 
+                                              "wrasse" = "Labridae",
+                                              "file" = "Monacanthidae", 
+                                              "goat" = "Mullidae", 
+                                              "grouper" = "Serranidae",
+                                              "box" = "Ostraciidae", 
+                                              "angel" = "Pomacanthidae", 
+                                              "butterfly" = "Chaetodontidae", 
+                                              "damsel" = "Pomacentridae",
+                                              "zanclidae" = "Zanclidae", 
+                                              "parrot" = "Scaridae", 
+                                              "parrotfish" = "Scaridae",
+                                              "surgeon" = "Acanthuridae", 
+                                              "unicorn" = "Acanthuridae",
+                                              "goby" = "Gobiidae",
+                                              "rabbit"= "Siganidae",
+                                              "gotat"= "Mullidae",
+                                              "zanclide"= "Zanclidae")
+
+unique(quadrat.grazing$Family.Latin) # one bite by a "?" species, one bite by a surgeon??, 
+
+# which bites don't have family.latin
+check <- quadrat.grazing %>%
+  filter(Family.Latin == "")
+# NOTE: mica is going back to check if any of these are herbivores, come back and check this all again, fixed!!!
+# only ceyennas no bite video chunk
+
+View(quadrat.grazing)
+
+
+
+
+
+######## COMBINE GRAZING WITH METADATA #######
+# Make sure the site names are the same
+unique(quadrat.grazing$Site)
+unique(field.data$Site)
+# nope
+
+quadrat.grazing$Site <- dplyr::recode(quadrat.grazing$Site, 
+                "Il de Rats"= "Il de rats",
+                "IlAnglaise_Seaward"= "Il Anglaise Seaward",
+                "IlePoule_Seaward" = "Il Poule Seaward",
+                "Salomon_Seaward" = "Il Anglaise Seaward")
+
+
+#Create Site.GoPro column for both dfs
+field.data[,"Site.GoPro"] <- NA
+field.data$Site.GoPro <- paste(field.data$Site, field.data$GoPro, sep=".")
+quadrat.grazing[,"Site.GoPro"] <- NA
+quadrat.grazing$Site.GoPro <- paste(quadrat.grazing$Site, quadrat.grazing$GoPro, sep=".")
+
+
+#Filter out the column we want
+filter <- field.data %>%
+  select(Site.GoPro, Video_length, Atoll)
+
+#Join field data and grazing
+field.quadrat.grazing <- left_join(quadrat.grazing, filter, by = c("Site.GoPro"))
+
+unique(field.quadrat.grazing$Site.GoPro) # 35 gopros!
+
+
+
+
+###### HERBIVORES ##########
+unique(field.quadrat.grazing$Family.Latin)
+herbivores <- field.quadrat.grazing %>%
+  filter(Family.Latin %in% c("Acanthuridae", "Scaridae", "Siganidae"))
+# Only a few bites for siganidae
+# there are still a few questionable bites
+
+unique(herbivores$Family.Latin)
+unique(herbivores$Site.GoPro)
+# three of the videos from the lagoon have no herbivores biting at all, only have 32 vidoes currently
+
+
+# Filter out corallivores just to look at
+corallivores <- field.quadrat.grazing %>%
+  filter(Family.Latin %in% c("Chaetodontidae"))
+
+unique(corallivores$Site.GoPro) # only 27 gopros have butterfly fish that took bites
+
+
+# Double check family assignment
+test <- quadrat.grazing %>%
+  group_by(Atoll, Site, Site.GoPro, Family.Latin, Type, Species) %>%
+  count(Family.Latin)
+```
+
+
+
+
+# Calculate grazing rates for herbivores
+```{r}
+###### CALCULATE BITE RATES #####
+#First count the number of bites (n) per site/GoPro
+countbites <- herbivores %>%
+  group_by(Site, GoPro, Site.GoPro)  %>% 
+  dplyr::count(sort = TRUE) 
+
+# Combine bite rates with field data
+filter <- countbites %>%
+  ungroup() %>%
+  dplyr::select("Site.GoPro", "n") %>%
+  rename(n.bites=n)
+
+filter <- as.data.frame(filter) 
+filter$Site.GoPro <- dplyr::recode(filter$Site.GoPro, 
+                                   "Il Poule Seaward.G " = "Il Poule Seaward.G") # fix spacing error
+
+herbivore.bites <- left_join(filter, 
+                       field.data, by = c("Site.GoPro"))
+
+#create a new column called bites.per.hour
+herbivore.bites[,"bites.per.hour"] <- NA
+
+#fill bites.per.hour (bites divided by video length)
+herbivore.bites$bites.per.hour <- herbivore.bites$n.bites / herbivore.bites$Video_length
+
+#create bites per min 
+herbivore.bites[,"bites.per.min"] <- NA
+herbivore.bites$bites.per.min <- herbivore.bites$bites.per.hour / 60
+
+# Add back in the two gopros from the lagoon that have no bites at all from herbivores
+# Il Anglaise Lagoon.A
+# Il Anglaise Lagoon.D
+# Il Anglaise Lagoon.H
+
+
+herbivore.bites <- herbivore.bites %>%
+  add_row(Site.GoPro = "Il Anglaise Lagoon.A", 
+          Island = "Salomon",
+          Site = "Il Anglaise Lagoon",
+          Atoll= "Salomon",
+          bites.per.min = 0,
+          bites.per.hour= 0) %>%
+    add_row(Site.GoPro = "Il Anglaise Lagoon.D", 
+          Island = "Salomon",
+          Site = "Il Anglaise Lagoon",
+          Atoll= "Salomon",
+          bites.per.min = 0,
+          bites.per.hour= 0) %>%
+    add_row(Site.GoPro = "Il Anglaise Lagoon.H", 
+          Island = "Salomon",
+          Site = "Il Anglaise Lagoon",
+          Atoll= "Salomon",
+          bites.per.min = 0,
+          bites.per.hour= 0)
+
+dim(herbivore.bites) # now all 35 gopros are there
+
+
+
+
+##### DIVIDE BY GRAZEABLE SUBSTRATE #######
+# Add in benthic data
+unique(herbivore.bites$Site.GoPro)
+unique(benthic.final$Site.GoPro)
+
+df1 <- left_join(herbivore.bites, benthic.final, by="Site.GoPro")
+
+df2 <- df1 %>% 
+  mutate(bites.per.min.grazeable = bites.per.min/Grazeable.substrate)
+
+# Mean bites per site
+herbivore.bites.site <- df2 %>%
+  group_by(Site) %>%
+  summarize(bites.per.min.grazeable.mean= mean(bites.per.min.grazeable),
+            bites.per.min.mean= mean(bites.per.min)) # calculate the average for each site 
+
+# Save the data (this is used for the coral models)
+save(herbivore.bites.site, file = "../data/bite.data.Rdata")
+
+
+
+
+##### ADD IN FISH/SHARK DATA #####
+# Add in shark data
+unique(df2$Island)
+View(mean.shark.abundance.tiles)
+
+# manually add in mean shark abundance
+herbivore.bites.shark <- df2 %>% 
+  mutate(Shark_Sum_Abundance= ifelse(Island %in% "Egmont", 6.9, ifelse(Island %in% "Salomon", 4.8, ifelse(Island %in% "Peros Banos", 3.8, ifelse(Island %in% "Middle Brother", 2.9, 3.1)))))
+
+# Add in Fish Data 
+load("../../dovs/data/created/fish.site.tiles.average.RData") # fish.site.tiles.average
+unique(herbivore.bites.shark$Site)
+unique(fish.site.tiles.average$Tile.Site)
+
+
+# Make the names match
+test <- herbivore.bites.shark %>%
+  mutate(Tile.Site= ifelse(Site == "Il Lubine", "Il Lubine",
+                            ifelse(Site == "Il de rats", "Il de rats",
+                                   ifelse(Site == "Nelson", "Nelson",
+                                   ifelse(Site == "Middle Brother", "Middle Brother",
+                                          ifelse(Site == "Il Anglaise Lagoon", "Salomon lagoon",
+                                                 ifelse(Site == "Il Anglaise Seaward", "Salomon seaward",
+                                                        ifelse(Site == "Il Poule Lagoon", "Peros Banhos Lagoon", "Peros Banhos Seaward"))))))))
+
+fish <- fish.site.tiles.average %>%
+  ungroup() %>%
+  select(-Atoll)
+
+herbivore.bites.shark.fish <- left_join(test, fish, by="Tile.Site") 
+dim(herbivore.bites.shark.fish)
+View(herbivore.bites.shark.fish)
+```
+
+
+
+```{r}
+# How many bites per species?
+herbs.bites.species <- herbivores %>%
+  group_by(Family.Latin, Species) %>%
+  count(Family.Latin)
+
+herbs.bites.species <- as.data.frame(herbs.bites.species)
+herbs.bites.species
+
+#Brown Surgeonfish (Acanthurus nigrofuscus) has the most bites and then Lined Bristletooth (Ctenochaetus striatus) 
+
+
+
+# Average bites per m2
+herbivore.bites.shark.fish %>%
+  summarise(mean=mean(bites.per.min.grazeable))
+# 10.87
+
+```
+
+Looks good! 20April2023

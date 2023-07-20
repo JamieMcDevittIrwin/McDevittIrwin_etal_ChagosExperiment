@@ -1,0 +1,163 @@
+---
+title: "bruvs-tiles"
+author: "Jamie McDevitt-Irwin"
+date: "3/21/2022"
+output: html_document
+---
+
+Dependencies: bruvs-data-cleaning.Rmd
+
+**Which BRUV drops should we filter out?**
+These are the drops that aren't close to our tile sites. 
+- Eagle
+- NE PB: North of Petite Ile Coquillage, South of Ile Yeye	
+
+
+**Data Frames**
+bruvs.wide
+bruvs.long
+
+
+```{r}
+library(dplyr);library(ggplot2);library(ggpubr);library(tidyr);library(car)
+```
+
+
+# Filter sites
+```{r}
+# Filter out drops at only near the tiles sites 
+dim(bruvs.wide) # 95 X 13
+bruvs.wide_tiles <- bruvs.wide %>% 
+  # get rid of PB sites away from our tiles
+  filter(!Island %in% c("North of Petite Ile Coquillage", "South of Ile Yeye")) %>%
+  # get rid of Eagle
+  filter(Region != "Eagle Island") %>%
+  # new column with all the sharks added up
+  mutate(All.Sharks = amblyrhynchos + ferrugineus + melanopterus + obesus)
+dim(bruvs.wide_tiles) # 70 14
+
+# How many drops per atoll
+bruvs.wide_tiles %>%
+  group_by(Region) %>%
+  count()
+
+
+# MAke a long DF
+bruvs.long_tiles <- bruvs.long %>%
+    filter(!Island %in% c("North of Petite Ile Coquillage", "South of Ile Yeye")) %>%
+  # get rid of PB sites away from our tiles
+  filter(Region != "Eagle Island")
+# get rid of eagle
+dim(bruvs.long_tiles) # 280  11
+dim(bruvs.long) # 380  11
+
+unique(bruvs.wide_tiles$OpCode) # 70 independent drops!
+
+```
+
+# Plots
+```{r}
+# Region X Species
+names <- as_labeller(c(`amblyrhynchos` = "C. amblyrhynchos", `ferrugineus` = "N. ferrugineus",`melanopterus` = "C. melanopterus", `obesus` = "T. obesus")) 
+
+p_sharks_species_region <- bruvs.long_tiles %>% 
+  dplyr::group_by(Region,Species) %>%
+  dplyr::summarize(mean_maxN = mean(MaxN)) %>%
+  group_by(Region) %>%
+  ggplot(aes(reorder(Region, mean_maxN), mean_maxN, fill= Species)) +
+  geom_bar(stat= 'identity', position="fill") + 
+  theme_pubr() +  labs(x= "", y="Relative Abundance")+
+  scale_x_discrete(guide = guide_axis(angle = 60))
+p_sharks_species_region 
+
+ggsave("../figures/sharkabundance-region-species.png", 
+       plot=p_sharks_species_region, width= 7, height=5)
+
+
+library(viridis)
+# Sharks by Region
+bruvs.wide_tiles$Region <- factor(bruvs.wide_tiles$Region, levels = c("Brothers", "Nelson's Island", "PerosBanhos", "Salomon", "Egmont" ))
+
+p_sharksXregion_tiles <- bruvs.wide_tiles %>%
+  group_by(Region) %>%
+  summarize(mean_maxN = mean(All.Sharks),
+            sd_maxN = sd(All.Sharks),
+            se_maxN = sd_maxN/ sqrt(length(All.Sharks))) %>%
+  ggplot(aes(reorder(Region, mean_maxN), mean_maxN, color= Region)) + 
+  geom_point(size=6) + 
+  geom_errorbar(aes(ymin = mean_maxN - sd_maxN, 
+                    ymax = mean_maxN + sd_maxN), 
+                width=0.2) +
+  theme_pubr(base_size=16) + 
+  theme(axis.text.x = element_blank()) +
+  labs(x= "", y="Sharks (mean maxN)")+
+  scale_color_viridis_d()
+p_sharksXregion_tiles
+
+ggsave("../figures/sharkabundance-region-tiles.png", 
+       plot=p_sharksXregion_tiles,
+       width=10, height=7)
+
+save(p_sharksXregion_tiles, file = "../data/sharkabundance-region-tiles.RData")
+
+
+
+
+
+# Region X Species
+names <- as_labeller(c(`amblyrhynchos` = "C. amblyrhynchos", `ferrugineus` = "N. ferrugineus",`melanopterus` = "C. melanopterus", `obesus` = "T. obesus")) 
+
+p_sharks_species_region_tiles <- bruvs.long_tiles %>% 
+  group_by(Region,Species) %>%
+  summarize(mean_maxN = mean(MaxN)) %>%
+  group_by(Region) %>%
+  ggplot(aes(reorder(Region, mean_maxN), mean_maxN, fill= Species)) +
+  geom_bar(stat= 'identity') + 
+  theme_pubr() +
+  ggtitle("\n\nSum of mean maxN across species") + 
+  labs(x= "Region", y="Sum of mean maxN (+/- SE)")
+p_sharks_species_region_tiles
+
+ggsave("../figures/sharkabundance-region-species.pdf", 
+       plot=p_sharks_species_region, width= 7, height=5)
+
+
+# Region X Species
+bruvs.long_tiles$Region <- factor(bruvs.long_tiles$Region, levels = c("Brothers", "Nelson's Island", "PerosBanhos", "Salomon", "Egmont" ))
+
+
+p_sharksXregion_tiles_species <- bruvs.long_tiles %>%
+  group_by(Region, Species) %>%
+  summarize(mean_maxN = mean(MaxN),
+            sd_maxN = sd(MaxN),
+            se_maxN = sd_maxN/ sqrt(length(MaxN))) %>%
+  ggplot(aes(reorder(Region, mean_maxN), mean_maxN, color= Region)) + 
+  facet_wrap(~ Species) +
+  geom_point(size=6) + 
+  geom_errorbar(aes(ymin = mean_maxN - sd_maxN, 
+                    ymax = mean_maxN + sd_maxN), 
+                width=0.2) +
+  theme_pubr(base_size=16) + 
+  theme(axis.text.x = element_blank()) +
+  labs(x= "Region", y="Sharks (mean maxN)")+
+  scale_color_viridis_d()
+p_sharksXregion_tiles_species 
+
+ggsave(p_sharksXregion_tiles_species ,
+       file="../figures/sharks-region-species-maxn-tiles.png",
+       width=10)
+```
+
+
+# Mean of sum MaxN
+This will be the explanatory variable in all of our models! 
+```{r}
+mean.shark.abundance.tiles <- bruvs.wide_tiles %>%
+  group_by(Region) %>%
+  summarize(mean_maxN = mean(All.Sharks)) %>%
+  ungroup()
+mean.shark.abundance.tiles 
+save(mean.shark.abundance.tiles, file="../data/created/mean.sum.shark.abundance.tiles.RData")
+```
+
+Looks good! 6April2023

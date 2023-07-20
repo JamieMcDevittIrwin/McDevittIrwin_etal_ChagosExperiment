@@ -1,0 +1,29 @@
+{
+    "id": "67DA8A51",
+    "path": "~/Documents/Documents - Jamie's MacBook Pro/Git_Repos/McDevittIrwin_etal_ChagosExperiment/grazing/scripts/data-cleaning.Rmd",
+    "project_path": "scripts/data-cleaning.Rmd",
+    "type": "r_markdown",
+    "hash": "1280471411",
+    "contents": "",
+    "dirty": false,
+    "created": 1689881876051.0,
+    "source_on_save": false,
+    "relative_order": 3,
+    "properties": {
+        "tempName": "Untitled1",
+        "source_window_id": "",
+        "Source": "Source",
+        "cursorPosition": "370,23",
+        "scrollLine": "0",
+        "docOutlineVisible": "1",
+        "rmdVisualCollapsedChunks": ""
+    },
+    "folds": "",
+    "lastKnownWriteTime": 1682961613,
+    "encoding": "UTF-8",
+    "collab_server": "",
+    "source_window": "",
+    "last_content_update": 1689883997630,
+    "read_only": false,
+    "read_only_alternatives": []
+}

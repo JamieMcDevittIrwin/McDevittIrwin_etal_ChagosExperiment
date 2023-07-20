@@ -1,0 +1,5 @@
+"0","# read in the data"
+"0","dovs <- read.csv(""../data/December2019_FromLauren/BIOT7097_DOV_Data_2018-2019_CombinedData.csv"", stringsAsFactors = FALSE) # has the 3d points and regular points combined"
+"2","Warning: cannot open file '../data/December2019_FromLauren/BIOT7097_DOV_Data_2018-2019_CombinedData.csv': No such file or directory"
+"2","Error in file(file, ""rt"") : cannot open the connection
+"

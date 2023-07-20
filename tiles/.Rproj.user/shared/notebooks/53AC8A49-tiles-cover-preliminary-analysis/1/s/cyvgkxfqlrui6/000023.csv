@@ -1,0 +1,5 @@
+"0","broad.cover_wide <- cover_wide %>%"
+"0","  mutate(Macroalgae = GREEN + GREEN2 + GREEN3 + GREEN4 + GREEN5 + GREEN6 + GREEN7 + GREEN8 + GREEN9 +"
+"0","           `_HALI` + `_LOBO` + `_PESP` + `_RDEN` + RDUP1 + RDUP2 + RDUP3 + RED2 + BROWN1 + BROWN2) %>%"
+"0","  mutate(CCA.All = CCAG + CCAP + `_CCA`) %>%"
+"0","  dplyr::select(c(Tile.Treatment:bites.per.min.grazeable.mean, Macroalgae, CCA.All, `*TURF`))"

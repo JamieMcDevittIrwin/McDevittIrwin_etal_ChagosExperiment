@@ -1,0 +1,159 @@
+---
+title: "data-analysis"
+author: "Jamie McDevitt-Irwin"
+date: "2023-02-08"
+output: html_document
+---
+Final DF: herbivore.bites.shark.fish
+
+
+```{r}
+library(ggplot2);library(ggpubr);library(emmeans);library(glmmTMB);library(ggeffects)
+```
+
+# Plots
+```{r}
+### Preliminary Plots #####
+herbivore.bites.shark.fish %>%
+  ggplot(aes(x=Site, y=bites.per.min.grazeable)) +
+  geom_boxplot()
+
+
+# Rename the sites
+herbivores$Site <- dplyr::recode(herbivores$Site, 
+                "Il Anglaise Seaward"= "Salomon seaward",
+                "Il Poule Seaward" = "Peros Banhos seaward",
+                "Il Anglaise Lagoon" = "Salomon lagoon")
+
+# Make teh data have the same x axis as the other plots
+herbivores$Site <- factor(herbivores$Site, 
+                          levels=c("Middle Brother", "Nelson", "Peros Banhos Lagoon", 
+"Peros Banhos seaward", "Salomon lagoon", "Salomon seaward", "Il de rats", "Il Lubine"))
+
+herbivores$Atoll.x <- factor(herbivores$Atoll.x, levels=c("Brothers", "Nelsons Island", "Peros Banhos", 
+"Salomon", "Egmont"))
+
+
+p_relabund_bites <- herbivores %>% 
+  ggplot(aes(x=Site,fill = Family.Latin)) +
+  geom_bar(position="fill") + 
+  theme_pubr()+
+  labs(x = "", y ="Relative Abundance", fill = "Family") + 
+  theme(axis.text.x=element_text(angle=45, hjust=1)) +
+  scale_x_discrete(labels=c("Il Lubine" = "Ile Lubine",
+                            "Il de rats" = "Ile de rats"))
+# Salomon lagoon is the only one that is pretty different (mainly scaridae bites)
+p_relabund_bites
+
+ggsave(p_relabund_bites, height=8, width=8,file="../figures/bites-relative-abundance.png")
+
+herbivore.bites.shark %>%
+  ggplot(aes(x=Shark_Sum_Abundance, y=bites.per.min)) +
+  geom_point() +
+  geom_smooth(method="lm")
+
+
+herbivore.bites.shark %>%
+  ggplot(aes(x=Shark_Sum_Abundance, y=bites.per.min.grazeable)) +
+  geom_point() +
+  geom_smooth(method="lm") +
+  theme_pubr()
+
+
+
+
+###### Plot grazing by sites #####
+# Rename the sites
+herbivore.bites.shark.fish$Site <- dplyr::recode(herbivore.bites.shark.fish$Site, 
+                "Il Anglaise Seaward"= "Salomon seaward",
+                "Il Poule Seaward" = "Peros Banhos seaward",
+                "Il Anglaise Lagoon" = "Salomon lagoon")
+
+
+# Make teh data have the same x axis as the other plots
+herbivore.bites.shark.fish$Site <- factor(herbivore.bites.shark.fish$Site, 
+                          levels=c("Middle Brother", "Nelson", "Peros Banhos Lagoon", 
+"Peros Banhos seaward", "Salomon lagoon", "Salomon seaward", "Il de rats", "Il Lubine"))
+
+herbivore.bites.shark.fish$Atoll <- factor(herbivore.bites.shark.fish$Atoll, levels=c("Brothers", "Nelson", "Peros Banhos", 
+"Salomon", "Egmont"))
+
+
+p_grazing <- herbivore.bites.shark.fish %>%
+  group_by(Site) %>%
+  mutate(Bites.mean= mean(bites.per.min.grazeable),
+           Bites.SD = sd(bites.per.min.grazeable),
+         Bites.SE = Bites.SD/sqrt(length(bites.per.min.grazeable))) %>%
+  ggplot(aes(x=Site, y=Bites.mean, color=Atoll)) + 
+  geom_point(size=6)+
+  geom_errorbar(aes(ymin = Bites.mean - Bites.SD, 
+                    ymax = Bites.mean + Bites.SD), 
+                width=0.2) +
+    theme_pubr(base_size = 16) +  
+  theme(axis.text.x = element_text(angle = 90)) +
+    theme(axis.text.x = element_blank())+
+  ylab("Grazing (bites min/m2)") +
+  scale_color_manual(values= c("#440154FF","#3B528BFF","#21908CFF","#5DC863FF","#FDE725FF")) +
+  guides(col = "none")
+
+p_grazing
+
+save(p_grazing, file= "../data/grazing-rates-site.RData")
+
+ggsave(p_grazing, file= "../figures/grazing-rates-site.png")
+```
+
+
+# Models
+
+Do we need site as a random effect because we have mesopredators at teh site level? 
+Could have a random effect of atoll instead but then we have shark abundance for each of these. So we don't need any random effects? 
+
+
+```{r}
+# Look at the data
+hist(herbivore.bites.shark.fish$bites.per.min.grazeable)
+library(glmmTMB)
+
+# Linear model
+m1 <- glmmTMB(bites.per.min.grazeable ~ Shark_Sum_Abundance + Mesopredators.avg, data=herbivore.bites.shark.fish, family = gaussian())
+
+summary(m1) # shark abundance is almost significant (0.06)
+performance::r2(m1)  
+#   Conditional R2: NA
+ #    Marginal R2: 0.837
+
+# Model Fit
+library(DHARMa)
+simres <- simulateResiduals(m1)
+plot(simres) # all good
+
+
+# Prediction Plots
+bites.shark.df <- as.data.frame(ggemmeans(m1, c("Shark_Sum_Abundance")))
+bites.meso.df <- as.data.frame(ggemmeans(m1, c("Mesopredators.avg")))
+
+p_bites.shark.predict <- ggplot(bites.shark.df , aes(x, predicted)) + 
+  geom_line(size=1.5) +
+  theme_pubr(base_size=16) +
+  labs(x="Shark Abundance", y="Predicted Grazing") + 
+  geom_ribbon(aes(ymin=conf.low, ymax=conf.high), alpha=0.1, colour=NA)+
+  ggtitle("f)")
+p_bites.shark.predict
+
+
+p_bites.meso.predict <- ggplot(bites.meso.df, aes(x, predicted)) + 
+  geom_line(size=1.5) +
+  theme_pubr(base_size=16) +
+  labs(x="Mesopredator Abundance", y="") + 
+  geom_ribbon(aes(ymin=conf.low, ymax=conf.high), alpha=0.1, colour=NA)+
+  ggtitle("g)")
+p_bites.meso.predict
+
+p_bites.predict <- ggarrange(p_bites.shark.predict, p_bites.meso.predict)
+p_bites.predict
+
+save(p_bites.predict, file= "../data/bites-predict.RData")
+```
+
+

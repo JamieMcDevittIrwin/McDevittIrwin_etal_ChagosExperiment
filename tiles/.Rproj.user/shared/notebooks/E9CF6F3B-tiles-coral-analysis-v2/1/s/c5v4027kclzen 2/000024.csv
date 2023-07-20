@@ -1,0 +1,6 @@
+"0","ggscatter(graze.all.df, x = ""bites.per.min.grazeable.mean"", y = ""bites.per.min.mean"", 
+          add = ""reg.line"", conf.int = TRUE, 
+          cor.coef = TRUE, cor.method = ""pearson"")
+"
+"2","`geom_smooth()` using formula 'y ~ x'
+"

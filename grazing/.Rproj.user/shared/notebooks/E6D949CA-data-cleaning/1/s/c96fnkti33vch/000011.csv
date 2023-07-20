@@ -1,0 +1,8 @@
+"0",""
+"0","#Brown Surgeonfish (Acanthurus nigrofuscus) has the most bites and then Lined Bristletooth (Ctenochaetus striatus) "
+"0",""
+"0",""
+"0",""
+"0","# Average bites per m2"
+"0","herbivore.bites.shark.fish %>%"
+"0","  summarise(mean=mean(bites.per.min.grazeable))"

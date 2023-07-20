@@ -1,0 +1,4 @@
+"0",""
+"0","# Model Diagnostics"
+"0","m6_simresids <- simulateResiduals(m6)"
+"0","plot(m6_simresids) # all good"

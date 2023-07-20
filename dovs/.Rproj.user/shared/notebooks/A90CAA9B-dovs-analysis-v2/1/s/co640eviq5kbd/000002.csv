@@ -1,0 +1,7 @@
+"0","# combine
+bornstein$Genus_species <- gsub("" "", ""_"", bornstein$Genus_species)
+dovs.long.traits <- left_join(dovs.long.traits, bornstein, by= ""Genus_species"")
+"
+"2","Error in left_join(dovs.long.traits, bornstein, by = ""Genus_species"") : 
+  object 'dovs.long.traits' not found
+"

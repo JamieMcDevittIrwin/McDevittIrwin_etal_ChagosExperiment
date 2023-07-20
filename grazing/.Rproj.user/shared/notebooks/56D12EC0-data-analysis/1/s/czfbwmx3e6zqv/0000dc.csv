@@ -1,0 +1,26 @@
+"0","# Prediction Plots
+bites.shark.df <- as.data.frame(ggemmeans(m1, c(""Shark_Sum_Abundance"")))
+bites.meso.df <- as.data.frame(ggemmeans(m1, c(""Mesopredators.avg"")))
+
+p_bites.shark.predict <- ggplot(bites.shark.df , aes(x, predicted)) + 
+  geom_line(size=1.5) +
+  theme_pubr(base_size=16) +
+  labs(x=""Shark Abundance"", y=""Predicted Grazing"") + 
+  geom_ribbon(aes(ymin=conf.low, ymax=conf.high), alpha=0.1, colour=NA)+
+  ggtitle(""f)"")+
+  annotate(geom=""text"", x=3, y=20, label=""."", size=16)
+  
+p_bites.shark.predict
+
+
+p_bites.meso.predict <- ggplot(bites.meso.df, aes(x, predicted)) + 
+  geom_line(size=1.5) +
+  theme_pubr(base_size=16) +
+  labs(x=""Mesopredators"", y="""") + 
+  geom_ribbon(aes(ymin=conf.low, ymax=conf.high), alpha=0.1, colour=NA)+
+  ggtitle(""g)"")
+p_bites.meso.predict
+"
+"0",""
+"0","p_bites.predict <- ggarrange(p_bites.shark.predict, p_bites.meso.predict)"
+"0","p_bites.predict"

@@ -1,0 +1,2 @@
+"0","knitr::opts_chunk$set(echo = FALSE)"
+"0","library(tidyverse);library(ggpubr);library(reshape2);library(stringr);library(vegan);library(lme4);library(janitor);"

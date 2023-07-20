@@ -1,0 +1,3 @@
+"0","# Overall mean shark abundance"
+"0","bruvs.summary %>% "
+"0","  summarize(mean_maxN = mean(All.Sharks)) # 4.24210 mean sharks per hour "

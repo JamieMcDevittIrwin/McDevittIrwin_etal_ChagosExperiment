@@ -1,0 +1,22 @@
+"0","knitr::opts_chunk$set(echo = TRUE)"
+"0","library(dplyr);library(ggplot2);library(ggpubr);library(tidyr);library(MASS);library(MuMIn)"
+"2","
+Attaching package: ‘MASS’
+
+"
+"2","The following object is masked from ‘package:plotly’:
+
+    select
+
+"
+"2","The following object is masked from ‘package:dplyr’:
+
+    select
+
+"
+"2","Registered S3 method overwritten by 'MuMIn':
+  method         from
+  predict.merMod lme4
+"
+"0","FishMorph <- read.csv(""../data/raw/DATA_fish_morphology.csv"")"
+"0","head(FishMorph)"

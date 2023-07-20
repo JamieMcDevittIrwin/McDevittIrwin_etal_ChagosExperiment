@@ -1,0 +1,8 @@
+"0","load(file = ""../../dovs/data/created/fish.site.tiles.average.RData"") # fish.site.tiles.average"
+"0","load(""../../bruvs/data/created/mean.sum.shark.abundance.tiles.RData"") # mean.shark.abundance.tiles"
+"0","load(""../../grazing/data/bite.data.RData"") # herbivore.bites.site"
+"0",""
+"0","load(""../../dovs/data/created/corallivore.site.Rdata"") # corallivore_site"
+"2","Warning: cannot open compressed file '../../dovs/data/created/corallivore.site.Rdata', probable reason 'No such file or directory'"
+"2","Error in readChar(con, 5L, useBytes = TRUE) : cannot open the connection
+"

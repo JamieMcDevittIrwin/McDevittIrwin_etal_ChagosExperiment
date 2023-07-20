@@ -1,0 +1,13 @@
+"0","# Calculate the average fish density for each family 
+dovs.wide.tiles.family <- dovs.long.tiles %>%
+  filter(Family %in% c(""Scaridae"", ""Acanthuridae"", ""Chaetodontidae"", ""Lutjanidae"", ""Lethrinidae"", ""Haemulidae"",""Serranidae"")) %>% 
+  group_by(OpCode_transect, Tile.Site, Atoll, Family) %>% 
+  summarize(sum= sum(Count)) %>%
+  group_by(Tile.Site, Atoll, Family) %>%
+  summarize(mean= mean(sum))%>% 
+  pivot_wider(names_from= Family, values_from= mean)
+"
+"1","`summarise()` has grouped output by 'OpCode_transect', 'Tile.Site', 'Atoll'. You can override using the `.groups` argument.
+"
+"1","`summarise()` has grouped output by 'Tile.Site', 'Atoll'. You can override using the `.groups` argument.
+"

@@ -1,0 +1,15 @@
+"0","library(tidyverse);library(ggpubr);library(janitor);library(vegan);library(plotrix)"
+"2","
+Attaching package: ‘janitor’
+
+"
+"2","The following objects are masked from ‘package:stats’:
+
+    chisq.test, fisher.test
+
+"
+"0","# raw data"
+"0","data <- read.csv(""../data/raw-data/Chagos_November2021_Data_QAQC_Tiles-lab coral_CoralCheck_RRC_Final.xlsx - Chagos_November2021_Data_QAQC_T.csv"",stringsAsFactors = FALSE,na.strings=c("""",""NA""))"
+"0",""
+"0","# metadata"
+"0","metadata <- read.csv(""../data/raw-data/BIOT_March2019_Data_QAQC-tiles.csv"",stringsAsFactors = FALSE,na.strings=c("""",""NA""))"
