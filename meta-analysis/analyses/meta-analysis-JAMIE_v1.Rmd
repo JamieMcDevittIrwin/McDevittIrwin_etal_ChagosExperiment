@@ -39,11 +39,11 @@ https://www.metafor-project.org/doku.php/tips:rma.uni_vs_rma.mv
 # (1) Data Wrangling
 Full data
 ```{r}
-data <- read.csv("../data/final_data_extracted.csv")
+data <- read.csv("../data/Paper searches - final_data_extracted.csv")
 View(data)
 
 # Create Metadata 
-test <- data %>% select(1:28) # filter out columns
+test <- data %>% select(1:33) # filter out columns
 
 # Group by each study so we only have one row per study
 metadata <- test %>% 
@@ -54,6 +54,12 @@ metadata <- test %>%
 # Create a new variable of a study number for each unique id
 data[,"study_num"] <- NA
 data$study_num <- as.numeric( sub("\\D*(\\d+).*", "\\1", data$unique_ID) )
+
+
+# Change characters to factors
+data$paper <- as.factor(data$paper)
+data$broad_region <- as.factor(data$broad_region)
+
 ```
 study_num column --> takes only the unique identifier numbers from the unique_ID column and stores in new column
 
@@ -74,12 +80,15 @@ coral_effect_size.1 <- escalc(measure="SMD", m1i=coral_uncaged_mean, m2i=coral_c
 
 # Select columns
 coral_effect_size.2 <- coral_effect_size.1 %>% 
-        select(c('unique_ID', 'paper', 'unique_ID_site', 'study_num', 'cluster_ID', 'coral_recruit_location', 'yi','vi', "herbivore_biomass_gm2", "study_duration_mm", "MPA_paper"))
+        select(c('unique_ID', 'paper', 'unique_ID_site', 'study_num', 'cluster_ID', 'coral_recruit_location', 'yi','vi', "herbivore_biomass_gm2", "study_duration_mm", "MPA_paper", "broad_region", "mean_human_impact_score", "latitude"))
 
 # Remove NA's
 coral_effect_size <- coral_effect_size.2 %>% 
         subset(!is.na(yi)) %>%
   mutate(esid=row_number()) 
+
+# Change characters to factors
+coral_effect_size$esid <- as.factor(coral_effect_size$esid)
 
 
 
@@ -94,13 +103,16 @@ ALGAE_effect_size.1 <- escalc(measure="SMD", m1i=ALGAE_uncaged_mean, m2i=ALGAE_c
                             n1i=ALGAE_uncaged_n, n2i=ALGAE_caged_n, 
                             data=data, slab=paste(last_name, year_started, location, site, sep=", "))
 
-ALGAE_effect_size.2 <- ALGAE_effect_size.1 %>% select(c('unique_ID', 'paper', 'unique_ID_site', 'study_num', 'cluster_ID', 'yi','vi',"herbivore_biomass_gm2","study_duration_mm"))
+ALGAE_effect_size.2 <- ALGAE_effect_size.1 %>% select(c('unique_ID', 'paper', 'unique_ID_site', 'study_num', 'cluster_ID', 'yi','vi',"herbivore_biomass_gm2","study_duration_mm", "MPA_paper", "broad_region", "mean_human_impact_score","latitude"))
 
 
 ALGAE_effect_size <- ALGAE_effect_size.2 %>% 
         subset(!is.na(yi))%>%
   mutate(esid=row_number())
       
+# Change characters to factors
+ALGAE_effect_size$esid <- as.factor(ALGAE_effect_size$esid)
+
 
 
 
@@ -111,12 +123,14 @@ turf_effect_size.1 <- escalc(measure="SMD", m1i=turf_uncaged_mean, m2i=turf_cage
                            n1i=turf_uncaged_n, n2i=turf_caged_n, 
                            data=data, slab=paste(last_name, year_started, location, site, sep=", "))
 
-turf_effect_size.2 <- turf_effect_size.1 %>% select(c('unique_ID', 'paper', 'unique_ID_site','study_num', 'cluster_ID', 'turf_cluster_ID', 'yi','vi',"herbivore_biomass_gm2","study_duration_mm"))
+turf_effect_size.2 <- turf_effect_size.1 %>% select(c('unique_ID', 'paper', 'unique_ID_site','study_num', 'cluster_ID', 'turf_cluster_ID', 'yi','vi',"herbivore_biomass_gm2","study_duration_mm","MPA_paper", "broad_region", "mean_human_impact_score","latitude"))
 
 turf_effect_size <- turf_effect_size.2 %>% 
         subset(!is.na(yi))%>%
   mutate(esid=row_number()) 
 
+# Change characters to factors
+turf_effect_size$esid <- as.factor(turf_effect_size$esid)
 
 
 
@@ -128,11 +142,14 @@ macroalgae_effect_size.1 <- escalc(measure="SMD", m1i=macroalgae_uncaged_mean, m
                                  n1i=macroalgae_uncaged_n, n2i=macroalgae_caged_n, 
                                  data=data, slab=paste(last_name, year_started, location, site, sep=", "))
 
-macroalgae_effect_size.2 <- macroalgae_effect_size.1 %>% select(c('unique_ID', 'paper', 'unique_ID_site','study_num', 'cluster_ID', 'macro_cluster_ID', 'yi','vi',"herbivore_biomass_gm2","study_duration_mm"))
+macroalgae_effect_size.2 <- macroalgae_effect_size.1 %>% select(c('unique_ID', 'paper', 'unique_ID_site','study_num', 'cluster_ID', 'macro_cluster_ID', 'yi','vi',"herbivore_biomass_gm2","study_duration_mm","MPA_paper", "broad_region", "mean_human_impact_score","latitude"))
 
 macroalgae_effect_size <- macroalgae_effect_size.2 %>% 
         subset(!is.na(yi)) %>%
   mutate(esid=row_number())
+
+# Change characters to factors
+macroalgae_effect_size$esid <- as.factor(macroalgae_effect_size$esid)
 
 
 
@@ -147,13 +164,14 @@ CCA_effect_size.1 <- escalc(measure="SMD", m1i=CCA_uncaged_mean, m2i=CCA_caged_m
                           n1i=CCA_uncaged_n, n2i=CCA_caged_n, 
                           data=data, slab=paste(last_name, year_started, location, site, sep=", "))
 
-CCA_effect_size.2 <- CCA_effect_size.1 %>% select(c('unique_ID', 'paper', 'unique_ID_site', 'study_num', 'cluster_ID', 'yi','vi',"herbivore_biomass_gm2","study_duration_mm"))
+CCA_effect_size.2 <- CCA_effect_size.1 %>% select(c('unique_ID', 'paper', 'unique_ID_site', 'study_num', 'cluster_ID', 'yi','vi',"herbivore_biomass_gm2","study_duration_mm","MPA_paper", "broad_region", "mean_human_impact_score","latitude"))
 
 CCA_effect_size <- CCA_effect_size.2 %>% 
         subset(!is.na(yi)) %>%
   mutate(esid=row_number())
 
-
+# Change characters to factors
+CCA_effect_size$esid <- as.factor(CCA_effect_size$esid)
 
 
 
@@ -165,17 +183,20 @@ invertebrates_effect_size.1 <- escalc(measure="SMD", m1i=invertebrates_uncaged_m
                                     n1i=invertebrates_uncaged_n, n2i=invertebrates_caged_n, 
                                     data=data, slab=paste(last_name, year_started, location, site, sep=", "))
 
-invertebrates_effect_size.2 <- invertebrates_effect_size.1 %>% select(c('unique_ID', 'paper', 'unique_ID_site', 'study_num', 'cluster_ID', 'inverts_cluster_ID', 'yi','vi',"herbivore_biomass_gm2","study_duration_mm"))
+invertebrates_effect_size.2 <- invertebrates_effect_size.1 %>% select(c('unique_ID', 'paper', 'unique_ID_site', 'study_num', 'cluster_ID', 'inverts_cluster_ID', 'yi','vi',"herbivore_biomass_gm2","study_duration_mm", "MPA_paper", "broad_region", "mean_human_impact_score","latitude"))
 
 invertebrates_effect_size <- invertebrates_effect_size.2 %>% 
         subset(!is.na(yi))%>%
   mutate(esid=row_number())
+
+# Change characters to factors
+invertebrates_effect_size$esid <- as.factor(invertebrates_effect_size$esid)
 ```
 
 
 
 
-# (3) Models
+# (3) RE Models
 
 
 ### Coral
@@ -191,12 +212,7 @@ summary(coral.multi)
 # apply cluster robust inference methods 
 robust(coral.multi, cluster=paper, clubSandwich=TRUE)
 
-# with herbivore biomass as a predictor
-summary(rma.mv(yi, vi, mods= ~ herbivore_biomass_gm2, random = ~ 1 | paper/esid, data = coral_effect_size, slab = paper))
 
-
-# with MPA as a predictor
-summary(rma.mv(yi, vi, mods= ~ MPA_paper, random = ~ 1 | paper/esid, data = coral_effect_size, slab = paper))
 
 
 
@@ -421,9 +437,151 @@ dev.off()
 
 
 
+# (4) Moderators
+### Coral
+```{r}
+# human impact
+coral_impact_mod <- rma.mv(yi, vi, mods= ~ mean_human_impact_score, 
+                        random = ~ 1 | paper/esid, 
+                        data = coral_effect_size, slab = paper)
+summary(coral_impact_mod) # not significant
 
 
-# (4) Figures
+# latitude
+coral_latitude_mod <- rma.mv(yi, vi, mods= ~ latitude, 
+                        random = ~ 1 | paper/esid, 
+                        data = coral_effect_size, slab = paper)
+summary(coral_latitude_mod) # not significant
+
+
+
+# study duration
+coral_duration_mod <- rma.mv(yi, vi, mods= ~ study_duration_mm, 
+                        random = ~ 1 | paper/esid, 
+                        data = coral_effect_size, slab = paper)
+summary(coral_duration_mod) # not significant
+```
+
+### Algae
+```{r}
+# human impact
+algae_impact_mod <- rma.mv(yi, vi, mods= ~ mean_human_impact_score, 
+                        random = ~ 1 | paper/esid, 
+                        data = full_algae_effect_size, slab = paper)
+summary(algae_impact_mod) # SIGNIFICANT, as human impact decreaseses, fishes decresase algae even more?
+
+# latitude
+algae_latitude_mod <- rma.mv(yi, vi, mods= ~ latitude, 
+                        random = ~ 1 | paper/esid, 
+                        data = full_algae_effect_size, slab = paper)
+summary(algae_latitude_mod) # not significant
+
+
+# study duration
+algae_duration_mod <- rma.mv(yi, vi, mods= ~ study_duration_mm, 
+                        random = ~ 1 | paper/esid, 
+                        data = full_algae_effect_size, slab = paper)
+summary(algae_duration_mod) # not significant
+
+
+
+# Plot of Algae vs Human Impact
+p_algae_impact <- ggplot(full_algae_effect_size, aes(x=mean_human_impact_score, y= yi))+
+  geom_point() +
+  geom_smooth(method=lm)+
+  theme_pubr(base_size=16) +
+  labs(y="Hedges D", x= "Human Impact") +
+  ggtitle("b) Algae")
+p_algae_impact 
+```
+
+
+### Turf
+```{r}
+# human impact
+turf_impact_mod <- rma.mv(yi, vi, mods= ~ mean_human_impact_score, 
+                        random = ~ 1 | paper/esid, 
+                        data = turf_effect_size, slab = paper)
+summary(turf_impact_mod) # not significant
+
+
+# latitude
+turf_latitude_mod <- rma.mv(yi, vi, mods= ~ latitude, 
+                        random = ~ 1 | paper/esid, 
+                        data = turf_effect_size, slab = paper)
+summary(turf_latitude_mod) # not significant
+
+
+# study duration
+turf_duration_mod <- rma.mv(yi, vi, mods= ~ study_duration_mm, 
+                        random = ~ 1 | paper/esid, 
+                        data = turf_effect_size, slab = paper)
+summary(turf_duration_mod) # not significant
+
+
+```
+
+
+### CCA
+```{r}
+
+# human impact
+CCA_impact_mod <- rma.mv(yi, vi, mods= ~ mean_human_impact_score, 
+                        random = ~ 1 | paper/esid, 
+                        data = CCA_effect_size, slab = paper)
+summary(CCA_impact_mod) # SIGNIFICANT
+
+
+# latitude
+CCA_latitude_mod <- rma.mv(yi, vi, mods= ~ latitude, 
+                        random = ~ 1 | paper/esid, 
+                        data = CCA_effect_size, slab = paper)
+summary(CCA_latitude_mod) # almost significant
+
+
+
+# study duration
+CCA_duration_mod <- rma.mv(yi, vi, mods= ~ study_duration_mm, 
+                        random = ~ 1 | paper/esid, 
+                        data = CCA_effect_size, slab = paper)
+summary(CCA_duration_mod) # not significant
+
+
+# Plot
+p_CCA_impact <- ggplot(CCA_effect_size, aes(x=mean_human_impact_score, y= yi))+
+  geom_point() +
+  geom_smooth(method=lm)+
+  theme_pubr(base_size=16) +
+  labs(y="Hedges D", x= "Human Impact") +
+  ggtitle("c) CCA")
+p_CCA_impact
+```
+
+### Invertebrates
+```{r}
+# human impact
+inv_impact_mod <- rma.mv(yi, vi, mods= ~ mean_human_impact_score, 
+                        random = ~ 1 | paper/esid, 
+                        data = invertebrates_effect_size, slab = paper)
+summary(inv_impact_mod) # not significant
+
+
+# latitude
+inv_latitude_mod <- rma.mv(yi, vi, mods= ~ latitude, 
+                        random = ~ 1 | paper/esid, 
+                        data = invertebrates_effect_size, slab = paper)
+summary(inv_latitude_mod) # not significant
+
+
+# study duration
+inv_duration_mod <- rma.mv(yi, vi, mods= ~ study_duration_mm, 
+                        random = ~ 1 | paper/esid, 
+                        data = invertebrates_effect_size, slab = paper)
+summary(inv_duration_mod) # not significant
+```
+
+
+# (5) Pooled Figure
 
 Pooled estimates figure
 ```{r}
@@ -454,12 +612,19 @@ plot.df$Taxa <- factor(plot.df$Taxa, levels = c("Invertebrates", "Turf","CCA", "
 
 p_pooled.estimates <- ggplot(plot.df, aes(y=Taxa, x=estimate, colour=Significance)) +
         geom_pointrange(aes(xmin=ci.lb, xmax=ci.ub), size=1) +
-        theme_pubr(base_size=16) +
+        theme_pubr(base_size=16,legend="none") +
         geom_vline(xintercept = 0, linetype="dashed")+
         scale_colour_manual(values=c("darkgrey","black")) +
-  labs(x="Standardized Mean Difference")
+  labs(x="Standardized Mean Difference", y="")+
+  ggtitle("a)")
 p_pooled.estimates
 
-ggsave(p_pooled.estimates, filename="../figures/pooled-estimates.png", height=6, width=8)
+
+p_impact <- ggarrange(p_algae_impact, p_CCA_impact)
+p_fig1 <- ggarrange(p_pooled.estimates, p_impact,
+          nrow=2)
+p_fig1
+
+ggsave(p_fig1, filename="../figures/figure1.png", height=10, width=8)
 ```
 
