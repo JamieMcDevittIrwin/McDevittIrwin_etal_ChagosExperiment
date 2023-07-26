@@ -118,11 +118,17 @@ fish.site.tiles.average <- dovs.wide.tiles.family %>%
             corallivore.avg = mean(corallivore))
 dim(fish.site.tiles.average) # 8 6
 save(fish.site.tiles.average, file="../data/created/fish.site.tiles.average.RData")
+
+# Egmont vs Brothers
+# egmont= 1 and 6
+# brothers= 69.5
+
+69.5/(7/2)
 ```
 
 Summaries
 ```{r}
-str(dovs.wide.tiles.family)
+
 unique(dovs.long.tiles$Full.Species.Name) # 174
 dim(dovs.wide.tiles.family) # 31 17
 ```

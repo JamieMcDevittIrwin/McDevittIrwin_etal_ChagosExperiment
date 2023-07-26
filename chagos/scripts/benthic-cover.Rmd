@@ -98,6 +98,10 @@ Summaries
 benthic_wide %>%
   summarize(across(c("CCA":"Sand"), mean))
 
+benthic_wide %>%
+  group_by(Site) %>%
+  summarize(mean=mean(Coral))
+
 ```
 
 # Plots

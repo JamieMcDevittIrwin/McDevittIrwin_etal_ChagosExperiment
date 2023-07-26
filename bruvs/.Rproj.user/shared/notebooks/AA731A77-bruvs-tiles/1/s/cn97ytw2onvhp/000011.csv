@@ -1,1 +1,5 @@
-"0","save(mean.shark.abundance.tiles, file=""../data/created/mean.sum.shark.abundance.tiles.RData"")"
+"0","mean.shark.abundance.tiles <- bruvs.wide_tiles %>%"
+"0","  group_by(Region) %>%"
+"0","  summarize(mean_maxN = mean(All.Sharks)) %>%"
+"0","  ungroup()"
+"0","mean.shark.abundance.tiles "
