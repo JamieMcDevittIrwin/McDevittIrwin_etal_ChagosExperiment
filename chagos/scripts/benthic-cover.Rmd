@@ -235,20 +235,21 @@ model_data <- test %>%
 http://www.sthda.com/english/articles/39-regression-model-diagnostics/161-linear-regression-assumptions-and-diagnostics-in-r-essentials/#regression-assumptions
 https://www.r-bloggers.com/2020/10/residual-plots-and-assumption-checking/
 
-RLMM: this packages lets you fit linear mixed effects models in a robust way. Implements the Robust Scoring Equations estimator for linear mixed effect models. - we used this package because we had issues with our model diagnostics (and transforming/trying other probability distributions did not resolve this)
-
 ### Coral
 Herbivore density
 ```{r}
 library(lmerTest) # gives you a p-value from lmer
-library(robustlmm) # robust linear regression
 
 hist(model_data$Coral)
 hist(model_data$Macroalgae)
 
+ggplot(model_data, aes(x=Herbivores.avg, y=Coral)) + geom_point() + geom_smooth()
+
 # Coral and herbivores
 coral_mod <- lmerTest::lmer(Coral ~ Herbivores.avg + (1|Atoll) , data= model_data)
 summary(coral_mod)
+performance::r2(coral_mod)
+
 
 # Model Diagnostics
 library(DHARMa)
@@ -262,37 +263,13 @@ plot(coral_mod,
      sqrt(abs(resid(.)))~fitted(.),
      type=c("p","smooth"), col.line=1) # scale location plot (homoskedasticity), not great
 
-# so lets apply a robust regression because we have issues that seem to revolve around heteroskedasticity
+# So lets use robust standard errors that help deal with heteroskedasticity
 
 
+library("clubSandwich")
+library(lmerTest) # gives you a p-value from lmer
 
-
-
-# Robust Linear Regression
-robust_coral_mod <- rlmer(Coral ~ Herbivores.avg + (1|Atoll), data= model_data)
-summary(robust_coral_mod)
-plot(robust_coral_mod) # seems to look the same as lmer 
-performance::r2(robust_coral_mod)
-
-tab_model(robust_coral_mod) # this gives you a pvalue
-
-# extract pvalues (another way of getting a pvalue)
-coefs <- data.frame(coef(summary(robust_coral_mod)))
-coefs$p.z <- 2 * (1 - pnorm(abs(coefs$t.value)))
-coefs
-
-# Another way to extract p-values
-# get coefficients from non-robust model to extract Satterthwaite approximated DFs
-coefs <- data.frame(coef(summary(coral_mod)))
-
-# get coefficients from robust model to extract t-values
-coefs.robust <- coef(summary(robust_coral_mod))
-
-# calculate p-values based on robust t-values and non-robust approx. DFs
-p.values <- 2*pt(abs(coefs.robust[,3]), coefs$df, lower=FALSE)
-p.values
-
-# all basically give the same p-value (robust)
+clubSandwich::coef_test(coral_mod, vcov = vcovCR(coral_mod, type = "CR2")) # CR2 has a small sample size correction
 ```
 
 
@@ -302,10 +279,16 @@ Fish Grazing
 grazing_model_data <- model_data %>%
   filter(Site != "Peros Banhos Lagoon")
 
+
+ggplot(grazing_model_data, aes(x=bites.per.min.grazeable.mean, y=Coral)) + geom_point() + geom_smooth()
+
+
+
+
 # linear model 
 coral_mod.graze <- lmerTest::lmer(Coral ~ bites.per.min.grazeable.mean + (1|Atoll) , data= grazing_model_data)
 summary(coral_mod.graze)
-
+performance::r2(coral_mod.graze)
 
 # Model Diagnostics
 library(DHARMa)
@@ -319,34 +302,15 @@ plot(coral_mod.graze,
      sqrt(abs(resid(.)))~fitted(.),
      type=c("p","smooth"), col.line=1) # scale location plot (homoskedasticity), not great
 
-# so lets apply a robust regression again
+# so lets apply a robust standard errors again
 
 
 
 
-# Robust Linear Regression
-robust_coral_mod.graze <- rlmer(Coral ~ bites.per.min.grazeable.mean + (1|Atoll), data= grazing_model_data)
-summary(robust_coral_mod.graze)
-plot(robust_coral_mod.graze)
-performance::r2(robust_coral_mod.graze)
+library("clubSandwich")
+library(lmerTest) # gives you a p-value from lmer
 
-tab_model(robust_coral_mod.graze) # this gives you a pvalue
-
-# extract pvalues (another way of getting a pvalue)
-coefs <- data.frame(coef(summary(robust_coral_mod.graze)))
-coefs$p.z <- 2 * (1 - pnorm(abs(coefs$t.value)))
-coefs
-
-# Another way to extract p-values
-# get coefficients from non-robust model to extract Satterthwaite approximated DFs
-coefs <- data.frame(coef(summary(coral_mod.graze)))
-
-# get coefficients from robust model to extract t-values
-coefs.robust <- coef(summary(robust_coral_mod.graze))
-
-# calculate p-values based on robust t-values and non-robust approx. DFs
-p.values <- 2*pt(abs(coefs.robust[,3]), coefs$df, lower=FALSE)
-p.values
+clubSandwich::coef_test(coral_mod.graze, vcov = vcovCR(coral_mod.graze, type = "CR2")) # CR2 has a small sample size correction
 
 ```
 
@@ -356,9 +320,13 @@ p.values
 
 ## Macroalgae
 ```{r}
+ggplot(model_data, aes(x=Herbivores.avg, y=Coral)) + geom_point() + geom_smooth()
+
+
 # Macroalgae
-algae_mod <- lmerTest::lmer(Macroalgae ~ Herbivores.avg + (1|Atoll), data= grazing_model_data)
-summary(algae_mod) # higher herbivores is positively related to high algae cover
+algae_mod <- lmerTest::lmer(Macroalgae ~ Herbivores.avg + (1|Atoll), data= model_data)
+summary(algae_mod) # higher herbivores is positively related to high algae cover (but this is barely significant) and our scatterplot doesn't really show a relationship
+performance::r2(algae_mod)
 
 
 # Model Fit
@@ -371,38 +339,17 @@ qqnorm(residuals(algae_mod)) # are the residuals normally distributed (meh-ish)
 qqline(residuals(algae_mod))
 plot(algae_mod,
      sqrt(abs(resid(.)))~fitted(.),
-     type=c("p","smooth"), col.line=1) # this looks good
+     type=c("p","smooth"), col.line=1) # this looks ok? but the dharma one says hommogeneity is violated
 
-# but there is enough messiness lets apply a robust regression again
-
-
-
-
-# Robust Linear Regression
-robust_algae_mod <- rlmer(Macroalgae ~ Herbivores.avg + (1|Atoll), data= model_data)
-summary(robust_algae_mod)
-plot(robust_algae_mod)
-performance::r2(robust_algae_mod)
-
-tab_model(robust_algae_mod) # this gives you a pvalue
+# so lets apply robust errors again?
 
 
 
-# extract pvalues (another way of getting a pvalue)
-coefs <- data.frame(coef(summary(robust_algae_mod)))
-coefs$p.z <- 2 * (1 - pnorm(abs(coefs$t.value)))
-coefs
+library("clubSandwich")
+library(lmerTest) # gives you a p-value from lmer
 
-# Another way to extract p-values
-# get coefficients from non-robust model to extract Satterthwaite approximated DFs
-coefs <- data.frame(coef(summary(algae_mod)))
-
-# get coefficients from robust model to extract t-values
-coefs.robust <- coef(summary(robust_algae_mod))
-
-# calculate p-values based on robust t-values and non-robust approx. DFs
-p.values <- 2*pt(abs(coefs.robust[,3]), coefs$df, lower=FALSE)
-p.values # (slightly diff by 0.001)
+clubSandwich::coef_test(algae_mod, vcov = vcovCR(algae_mod, type = "CR2")) # CR2 has a small sample size correction
+# now its no longer significant
 ```
 
 
@@ -413,6 +360,8 @@ p.values # (slightly diff by 0.001)
 
 Grazing
 ```{r}
+ggplot(grazing_model_data, aes(x=bites.per.min.grazeable.mean, y=Macroalgae)) + geom_point() + geom_smooth()
+
 algae_mod_graze <- lmerTest::lmer(Macroalgae ~ bites.per.min.grazeable.mean + (1|Atoll), data= grazing_model_data) # singular
 
 # Try without the random effect 
@@ -421,6 +370,12 @@ summary(algae_mod_graze_lm) # higher herbivores bites is related to higher algae
 
 # Model Diagnostics
 plot(algae_mod_graze_lm) # seems ok
+
+
+# try robust standard errors
+library(sandwich)
+library(lmtest)
+coeftest(algae_mod_graze_lm, vcov = vcovHC(algae_mod_graze_lm, type = "HC0"))
 ```
 
 
