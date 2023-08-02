@@ -39,11 +39,10 @@ https://www.metafor-project.org/doku.php/tips:rma.uni_vs_rma.mv
 # (1) Data Wrangling
 Full data
 ```{r}
-data <- read.csv("../data/Paper searches - final_data_extracted.csv")
-View(data)
+rawdata <- read.csv("../data/Paper searches - final_data_extracted.csv")
 
 # Create Metadata 
-test <- data %>% select(1:33) # filter out columns
+test <- rawdata %>% select(1:37) # filter out columns
 
 # Group by each study so we only have one row per study
 metadata <- test %>% 
@@ -52,22 +51,48 @@ metadata <- test %>%
         summarize(mean_herb_biomass = mean(herbivore_biomass_gm2))
 
 # Create a new variable of a study number for each unique id
-data[,"study_num"] <- NA
-data$study_num <- as.numeric( sub("\\D*(\\d+).*", "\\1", data$unique_ID) )
+rawdata[,"study_num"] <- NA
+rawdata$study_num <- as.numeric( sub("\\D*(\\d+).*", "\\1", rawdata$unique_ID) )
 
 
 # Change characters to factors
-data$paper <- as.factor(data$paper)
-data$broad_region <- as.factor(data$broad_region)
+rawdata$paper <- as.factor(rawdata$paper)
+rawdata$broad_region <- as.factor(rawdata$broad_region)
 
 ```
 study_num column --> takes only the unique identifier numbers from the unique_ID column and stores in new column
 
 
+Human Impact Metric
+```{r}
+human.impact <- read.csv("../data/Paper searches - Halpern_etal_2015_SuppTable3.csv")
+human.impact <- human.impact %>%
+  rename(Ecoregion=Suppl..Data.3....2013.MEOW..........................Ecoregion)
+
+# make new columns based on what we think would influence coral reefs and top down control
+test <- human.impact %>%
+  mutate(human.impact.reefs.top3 = Artisanal.fishing + Direct.human.impact + Nutrient.pollution) %>%
+  mutate(human.impact.local = Artisanal.fishing + Demersal.destructive.fishing +
+           Demersal.nondestructive.high.bycatch.fishing + 
+           Demersal.nondestructive.low.bycatch.fishing+ 
+           Direct.human.impact +
+           Inorganic.pollution +
+           Invasive.species +
+           Nutrient.pollution+ 
+           Ocean.based.pollution +
+           Organic.pollution) %>%
+  select(Ecoregion, human.impact.local, human.impact.reefs.top3)
+
+
+# Combine with data
+data <- rawdata %>%
+  left_join(test, by=c("human_impact_ecoregion" = "Ecoregion"))
+```
+
+
 
 
 # (2) Calculate Effect Sizes
-
 ```{r}
 ##### Coral #####
 #################
@@ -80,7 +105,7 @@ coral_effect_size.1 <- escalc(measure="SMD", m1i=coral_uncaged_mean, m2i=coral_c
 
 # Select columns
 coral_effect_size.2 <- coral_effect_size.1 %>% 
-        select(c('unique_ID', 'paper', 'unique_ID_site', 'study_num', 'cluster_ID', 'coral_recruit_location', 'yi','vi', "herbivore_biomass_gm2", "study_duration_mm", "MPA_paper", "broad_region", "mean_human_impact_score", "latitude"))
+        select(c('unique_ID', 'paper', 'unique_ID_site', 'study_num', 'cluster_ID', 'coral_recruit_location', 'yi','vi', "herbivore_biomass_gm2", "study_duration_mm", "MPA_paper", "broad_region", "region_human_impact_score_2008","region_human_impact_score_2013", "latitude", "cell_market_gravity", "cell_human_impact", "human.impact.reefs.top3","human.impact.local"))
 
 # Remove NA's
 coral_effect_size <- coral_effect_size.2 %>% 
@@ -103,7 +128,7 @@ ALGAE_effect_size.1 <- escalc(measure="SMD", m1i=ALGAE_uncaged_mean, m2i=ALGAE_c
                             n1i=ALGAE_uncaged_n, n2i=ALGAE_caged_n, 
                             data=data, slab=paste(last_name, year_started, location, site, sep=", "))
 
-ALGAE_effect_size.2 <- ALGAE_effect_size.1 %>% select(c('unique_ID', 'paper', 'unique_ID_site', 'study_num', 'cluster_ID', 'yi','vi',"herbivore_biomass_gm2","study_duration_mm", "MPA_paper", "broad_region", "mean_human_impact_score","latitude"))
+ALGAE_effect_size.2 <- ALGAE_effect_size.1 %>% select(c('unique_ID', 'paper', 'unique_ID_site', 'study_num', 'cluster_ID', 'yi','vi',"herbivore_biomass_gm2","study_duration_mm", "MPA_paper", "broad_region", "region_human_impact_score_2008","region_human_impact_score_2013","latitude","cell_market_gravity", "cell_human_impact","human.impact.reefs.top3","human.impact.local"))
 
 
 ALGAE_effect_size <- ALGAE_effect_size.2 %>% 
@@ -123,7 +148,7 @@ turf_effect_size.1 <- escalc(measure="SMD", m1i=turf_uncaged_mean, m2i=turf_cage
                            n1i=turf_uncaged_n, n2i=turf_caged_n, 
                            data=data, slab=paste(last_name, year_started, location, site, sep=", "))
 
-turf_effect_size.2 <- turf_effect_size.1 %>% select(c('unique_ID', 'paper', 'unique_ID_site','study_num', 'cluster_ID', 'turf_cluster_ID', 'yi','vi',"herbivore_biomass_gm2","study_duration_mm","MPA_paper", "broad_region", "mean_human_impact_score","latitude"))
+turf_effect_size.2 <- turf_effect_size.1 %>% select(c('unique_ID', 'paper', 'unique_ID_site','study_num', 'cluster_ID', 'turf_cluster_ID', 'yi','vi',"herbivore_biomass_gm2","study_duration_mm","MPA_paper", "broad_region", "region_human_impact_score_2008","region_human_impact_score_2013","latitude","cell_market_gravity", "cell_human_impact","human.impact.reefs.top3","human.impact.local"))
 
 turf_effect_size <- turf_effect_size.2 %>% 
         subset(!is.na(yi))%>%
@@ -142,7 +167,7 @@ macroalgae_effect_size.1 <- escalc(measure="SMD", m1i=macroalgae_uncaged_mean, m
                                  n1i=macroalgae_uncaged_n, n2i=macroalgae_caged_n, 
                                  data=data, slab=paste(last_name, year_started, location, site, sep=", "))
 
-macroalgae_effect_size.2 <- macroalgae_effect_size.1 %>% select(c('unique_ID', 'paper', 'unique_ID_site','study_num', 'cluster_ID', 'macro_cluster_ID', 'yi','vi',"herbivore_biomass_gm2","study_duration_mm","MPA_paper", "broad_region", "mean_human_impact_score","latitude"))
+macroalgae_effect_size.2 <- macroalgae_effect_size.1 %>% select(c('unique_ID', 'paper', 'unique_ID_site','study_num', 'cluster_ID', 'macro_cluster_ID', 'yi','vi',"herbivore_biomass_gm2","study_duration_mm","MPA_paper", "broad_region", "region_human_impact_score_2008","region_human_impact_score_2013","latitude","cell_market_gravity", "cell_human_impact","human.impact.reefs.top3","human.impact.local"))
 
 macroalgae_effect_size <- macroalgae_effect_size.2 %>% 
         subset(!is.na(yi)) %>%
@@ -164,7 +189,7 @@ CCA_effect_size.1 <- escalc(measure="SMD", m1i=CCA_uncaged_mean, m2i=CCA_caged_m
                           n1i=CCA_uncaged_n, n2i=CCA_caged_n, 
                           data=data, slab=paste(last_name, year_started, location, site, sep=", "))
 
-CCA_effect_size.2 <- CCA_effect_size.1 %>% select(c('unique_ID', 'paper', 'unique_ID_site', 'study_num', 'cluster_ID', 'yi','vi',"herbivore_biomass_gm2","study_duration_mm","MPA_paper", "broad_region", "mean_human_impact_score","latitude"))
+CCA_effect_size.2 <- CCA_effect_size.1 %>% select(c('unique_ID', 'paper', 'unique_ID_site', 'study_num', 'cluster_ID', 'yi','vi',"herbivore_biomass_gm2","study_duration_mm","MPA_paper", "broad_region", "region_human_impact_score_2008","region_human_impact_score_2013","latitude","cell_market_gravity", "cell_human_impact","human.impact.reefs.top3","human.impact.local"))
 
 CCA_effect_size <- CCA_effect_size.2 %>% 
         subset(!is.na(yi)) %>%
@@ -183,7 +208,7 @@ invertebrates_effect_size.1 <- escalc(measure="SMD", m1i=invertebrates_uncaged_m
                                     n1i=invertebrates_uncaged_n, n2i=invertebrates_caged_n, 
                                     data=data, slab=paste(last_name, year_started, location, site, sep=", "))
 
-invertebrates_effect_size.2 <- invertebrates_effect_size.1 %>% select(c('unique_ID', 'paper', 'unique_ID_site', 'study_num', 'cluster_ID', 'inverts_cluster_ID', 'yi','vi',"herbivore_biomass_gm2","study_duration_mm", "MPA_paper", "broad_region", "mean_human_impact_score","latitude"))
+invertebrates_effect_size.2 <- invertebrates_effect_size.1 %>% select(c('unique_ID', 'paper', 'unique_ID_site', 'study_num', 'cluster_ID', 'inverts_cluster_ID', 'yi','vi',"herbivore_biomass_gm2","study_duration_mm", "MPA_paper", "broad_region", "region_human_impact_score_2008","region_human_impact_score_2013","latitude","cell_market_gravity", "cell_human_impact","human.impact.reefs.top3","human.impact.local"))
 
 invertebrates_effect_size <- invertebrates_effect_size.2 %>% 
         subset(!is.na(yi))%>%
@@ -197,8 +222,6 @@ invertebrates_effect_size$esid <- as.factor(invertebrates_effect_size$esid)
 
 
 # (3) RE Models
-
-
 ### Coral
 ```{r}
 #### Multilevel model ####
@@ -438,13 +461,61 @@ dev.off()
 
 
 # (4) Moderators
+```{r}
+hist(data$latitude)
+hist(data$cell_market_gravity)
+hist(data$cell_human_impact)
+hist(data$region_human_impact_score_2013)
+hist(data$human.impact.local)
+hist(data$human.impact.reefs.top3)
+
+
+
+
+
+# Correlations between human impact and market gravity
+ggplot(data, aes(x=region_human_impact_score_2013, y=cell_human_impact)) +geom_point() +geom_smooth(method="lm")
+# correlated
+
+
+ggplot(data, aes(x=log(cell_market_gravity+1), y=cell_human_impact)) +geom_point() +geom_smooth()
+# correlated
+
+
+ggplot(data, aes(x=log(cell_market_gravity+1), y=cell_human_impact)) +geom_point() +geom_smooth()
+
+# Pretty correlated
+ggplot(data, aes(x=human.impact.local, y=human.impact.reefs.top3)) +geom_point() +geom_smooth()
+
+```
+"cell_market_gravity", "cell_human_impact"
+
 ### Coral
 ```{r}
-# human impact
-coral_impact_mod <- rma.mv(yi, vi, mods= ~ mean_human_impact_score, 
+# Cumulative Human Impact (eco region level)
+coral_regimpact_mod <- rma.mv(yi, vi, mods= ~ region_human_impact_score_2013, 
                         random = ~ 1 | paper/esid, 
                         data = coral_effect_size, slab = paper)
-summary(coral_impact_mod) # not significant
+summary(coral_regimpact_mod) # not significant
+ggplot(coral_effect_size, aes(x=region_human_impact_score_2013, y=yi)) +geom_point() +geom_smooth()
+
+
+# Human Impact - top 3 stressors for coral reefs
+coral_top3_mod <- rma.mv(yi, vi, mods= ~ human.impact.reefs.top3, 
+                        random = ~ 1 | paper/esid, 
+                        data = coral_effect_size, slab = paper)
+summary(coral_top3_mod) # not significant
+
+ggplot(coral_effect_size, aes(x=human.impact.reefs.top3, y=yi)) +geom_point() +geom_smooth()
+
+
+
+# Human Impact - just local stressors that affect reefs
+coral_local_mod <- rma.mv(yi, vi, mods= ~ human.impact.local, 
+                        random = ~ 1 | paper/esid, 
+                        data = coral_effect_size, slab = paper)
+summary(coral_local_mod) # not significant
+ggplot(coral_effect_size, aes(x=human.impact.local, y=yi)) +geom_point() +geom_smooth()
 
 
 # latitude
@@ -460,15 +531,33 @@ coral_duration_mod <- rma.mv(yi, vi, mods= ~ study_duration_mm,
                         random = ~ 1 | paper/esid, 
                         data = coral_effect_size, slab = paper)
 summary(coral_duration_mod) # not significant
+
+
+
 ```
 
 ### Algae
 ```{r}
-# human impact
-algae_impact_mod <- rma.mv(yi, vi, mods= ~ mean_human_impact_score, 
+# Cumulative Human Impact (ecoregion level)
+algae_impact_mod <- rma.mv(yi, vi, mods= ~ region_human_impact_score_2013, 
                         random = ~ 1 | paper/esid, 
                         data = full_algae_effect_size, slab = paper)
-summary(algae_impact_mod) # SIGNIFICANT, as human impact decreaseses, fishes decresase algae even more?
+summary(algae_impact_mod) # not significant
+
+
+# Human Impact - top 3 stressors for coral reefs
+algae_reefs3_mod <- rma.mv(yi, vi, mods= ~ human.impact.reefs.top3, 
+                        random = ~ 1 | paper/esid, 
+                        data = full_algae_effect_size, slab = paper)
+summary(algae_reefs3_mod) # not significant
+
+
+# Human Impact - just local stressors that affect reefs
+algae_local_mod <- rma.mv(yi, vi, mods= ~ human.impact.local, 
+                        random = ~ 1 | paper/esid, 
+                        data = full_algae_effect_size, slab = paper)
+summary(algae_local_mod) # not significant
+
 
 # latitude
 algae_latitude_mod <- rma.mv(yi, vi, mods= ~ latitude, 
@@ -482,27 +571,32 @@ algae_duration_mod <- rma.mv(yi, vi, mods= ~ study_duration_mm,
                         random = ~ 1 | paper/esid, 
                         data = full_algae_effect_size, slab = paper)
 summary(algae_duration_mod) # not significant
-
-
-
-# Plot of Algae vs Human Impact
-p_algae_impact <- ggplot(full_algae_effect_size, aes(x=mean_human_impact_score, y= yi))+
-  geom_point() +
-  geom_smooth(method=lm)+
-  theme_pubr(base_size=16) +
-  labs(y="Hedges D", x= "Human Impact") +
-  ggtitle("b) Algae")
-p_algae_impact 
 ```
 
 
 ### Turf
 ```{r}
-# human impact
-turf_impact_mod <- rma.mv(yi, vi, mods= ~ mean_human_impact_score, 
+# Cumulative Human Impact (eco region level)
+turf_impact_mod <- rma.mv(yi, vi, mods= ~ region_human_impact_score_2013, 
                         random = ~ 1 | paper/esid, 
                         data = turf_effect_size, slab = paper)
 summary(turf_impact_mod) # not significant
+
+
+
+# Human Impact - top 3 stressors for coral reefs
+turf_reefs3_mod <- rma.mv(yi, vi, mods= ~ human.impact.reefs.top3, 
+                        random = ~ 1 | paper/esid, 
+                        data = turf_effect_size, slab = paper)
+summary(turf_reefs3_mod) # not significant
+
+
+
+# Human Impact - just local stressors that affect reefs
+turf_local_mod <- rma.mv(yi, vi, mods= ~ human.impact.local, 
+                        random = ~ 1 | paper/esid, 
+                        data = turf_effect_size, slab = paper)
+summary(turf_local_mod) # not significant
 
 
 # latitude
@@ -510,6 +604,7 @@ turf_latitude_mod <- rma.mv(yi, vi, mods= ~ latitude,
                         random = ~ 1 | paper/esid, 
                         data = turf_effect_size, slab = paper)
 summary(turf_latitude_mod) # not significant
+
 
 
 # study duration
@@ -525,11 +620,26 @@ summary(turf_duration_mod) # not significant
 ### CCA
 ```{r}
 
-# human impact
-CCA_impact_mod <- rma.mv(yi, vi, mods= ~ mean_human_impact_score, 
+# Cumulative Human Impact (eco region level)
+CCA_impact_mod <- rma.mv(yi, vi, mods= ~ region_human_impact_score_2013, 
                         random = ~ 1 | paper/esid, 
                         data = CCA_effect_size, slab = paper)
-summary(CCA_impact_mod) # SIGNIFICANT
+summary(CCA_impact_mod) # not significant
+
+
+# Human Impact - top 3 stressors for coral reefs
+CCA_reefs3_mod <- rma.mv(yi, vi, mods= ~ human.impact.reefs.top3, 
+                        random = ~ 1 | paper/esid, 
+                        data = CCA_effect_size, slab = paper)
+summary(CCA_reefs3_mod) # not significant
+
+
+
+# Human Impact - just local stressors that affect reefs
+CCA_local_mod <- rma.mv(yi, vi, mods= ~ human.impact.local, 
+                        random = ~ 1 | paper/esid, 
+                        data = CCA_effect_size, slab = paper)
+summary(CCA_local_mod) # not significant
 
 
 # latitude
@@ -545,25 +655,31 @@ CCA_duration_mod <- rma.mv(yi, vi, mods= ~ study_duration_mm,
                         random = ~ 1 | paper/esid, 
                         data = CCA_effect_size, slab = paper)
 summary(CCA_duration_mod) # not significant
-
-
-# Plot
-p_CCA_impact <- ggplot(CCA_effect_size, aes(x=mean_human_impact_score, y= yi))+
-  geom_point() +
-  geom_smooth(method=lm)+
-  theme_pubr(base_size=16) +
-  labs(y="Hedges D", x= "Human Impact") +
-  ggtitle("c) CCA")
-p_CCA_impact
 ```
 
 ### Invertebrates
 ```{r}
-# human impact
-inv_impact_mod <- rma.mv(yi, vi, mods= ~ mean_human_impact_score, 
+# Cumulative Human Impact (ecoregion level)
+inv_impact_mod <- rma.mv(yi, vi, mods= ~ region_human_impact_score_2013, 
                         random = ~ 1 | paper/esid, 
                         data = invertebrates_effect_size, slab = paper)
 summary(inv_impact_mod) # not significant
+
+
+
+# Human Impact - top 3 stressors for coral reefs
+inv_reefs3_mod <- rma.mv(yi, vi, mods= ~ human.impact.reefs.top3, 
+                        random = ~ 1 | paper/esid, 
+                        data = invertebrates_effect_size, slab = paper)
+summary(inv_reefs3_mod) # not significant
+
+
+
+# Human Impact - just local stressors that affect reefs
+inv_local_mod <- rma.mv(yi, vi, mods= ~ human.impact.local, 
+                        random = ~ 1 | paper/esid, 
+                        data = invertebrates_effect_size, slab = paper)
+summary(inv_local_mod) # not significant
 
 
 # latitude
@@ -582,8 +698,6 @@ summary(inv_duration_mod) # not significant
 
 
 # (5) Pooled Figure
-
-Pooled estimates figure
 ```{r}
 coral <- coef(summary(coral.multi)) %>%
         mutate(Taxa = "Coral") %>%
@@ -615,16 +729,11 @@ p_pooled.estimates <- ggplot(plot.df, aes(y=Taxa, x=estimate, colour=Significanc
         theme_pubr(base_size=16,legend="none") +
         geom_vline(xintercept = 0, linetype="dashed")+
         scale_colour_manual(values=c("darkgrey","black")) +
-  labs(x="Standardized Mean Difference", y="")+
-  ggtitle("a)")
+  labs(x="Standardized Mean Difference", y="")
 p_pooled.estimates
 
 
-p_impact <- ggarrange(p_algae_impact, p_CCA_impact)
-p_fig1 <- ggarrange(p_pooled.estimates, p_impact,
-          nrow=2)
-p_fig1
 
-ggsave(p_fig1, filename="../figures/figure1.png", height=10, width=8)
+ggsave(p_pooled.estimates, filename="../figures/pooled-estimates.png", height=6, width=8)
 ```
 
