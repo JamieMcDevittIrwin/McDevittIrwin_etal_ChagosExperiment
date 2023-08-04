@@ -158,8 +158,7 @@ load(file = "../../dovs/data/created/fish.site.tiles.average.RData") # fish.site
 load("../../bruvs/data/created/mean.sum.shark.abundance.tiles.RData") # mean.shark.abundance.tiles
 load("../../grazing/data/bite.data.RData") # herbivore.bites.site
 
-load("../../dovs/data/created/corallivore.site.Rdata") # corallivore_site
-#corals.2021_wide # data to add to
+
 
 
 
@@ -200,15 +199,12 @@ consumer.metadata <- fish.site.tiles.average %>%
   
 # Join the dataframes
 corals.fishes_wide <- left_join(test, consumer.metadata,  by="Tile.Site") %>%
-  left_join(test2, by="Tile.Site") %>%
-  left_join(corallivore_site,  by="Tile.Site")
+  left_join(test2, by="Tile.Site")
 save(corals.fishes_wide, file="../data/created-data/corals.fishes_wide.Rdata")
 
 
 # Create a long dataframe
 corals.fishes_long <- corals.fishes_wide %>%
-  pivot_longer(-c(Date:Tile_Treatment, All.Corals:corallivore), names_to= "Tile_position", values_to= "Coral")
+  pivot_longer(-c(Date:Tile_Treatment, All.Corals:bites.per.min.mean), names_to= "Tile_position", values_to= "Coral")
 ```
 
-
-Looks good! 11April2023

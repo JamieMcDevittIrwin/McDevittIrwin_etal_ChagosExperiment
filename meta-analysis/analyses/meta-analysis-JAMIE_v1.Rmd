@@ -23,9 +23,6 @@ library("esc")
 library("purrr")
 ```
 
-Notes
-- ALGAE: is anytime a study wasn't specific about what type of algae its talking about
-- Macroalgae: not CCA, not turf
 
 
 https://wviechtb.github.io/metafor/reference/robust.html
@@ -277,11 +274,11 @@ Combined ALGAE and macroalgae into one dataframe
 ```{r}
 #### Combine the data #####
 ###########################
-dim(ALGAE_effect_size) #20  5
-dim(macroalgae_effect_size) #60  6
+dim(ALGAE_effect_size) #20  
+dim(macroalgae_effect_size) #60  
 
 full_algae_effect_size <- bind_rows(ALGAE_effect_size,macroalgae_effect_size)
-dim(full_algae_effect_size) #80  10
+dim(full_algae_effect_size) #80  
 
 
 #### Multilevel model ####
@@ -295,10 +292,6 @@ summary(algae.multi)
 robust(algae.multi, cluster=paper, clubSandwich=TRUE)
 
 
-# with herbivore biomass as a predictor
-summary(rma.mv(yi, vi, mods= ~ herbivore_biomass_gm2, random = ~ 1 | paper/esid, data = full_algae_effect_size,slab = paper)) # not significant
-
-
 
 #### Forest Plot ####
 #####################
@@ -310,7 +303,6 @@ class(algae.escalc) # escalc
 
 # Plot this model with aggregated data (one outcome per study)
 agg <- aggregate(algae.escalc, cluster=paper, V=vcov(algae.multi, type="obs"), addk=TRUE)
-View(agg)
 
 res <- rma(yi, vi, method="EE", data=agg, digits=3)
 res
@@ -355,7 +347,6 @@ turf.escalc <- escalc(measure="SMD", yi=yi, vi=vi,
 class(turf.escalc) # escalc
 
 agg <- aggregate(turf.escalc, cluster=paper, V=vcov(turf.multi, type="obs"), addk=TRUE)
-View(agg)
 
 res <- rma(yi, vi, method="EE", data=agg, digits=3)
 res
@@ -461,34 +452,6 @@ dev.off()
 
 
 # (4) Moderators
-```{r}
-hist(data$latitude)
-hist(data$cell_market_gravity)
-hist(data$cell_human_impact)
-hist(data$region_human_impact_score_2013)
-hist(data$human.impact.local)
-hist(data$human.impact.reefs.top3)
-
-
-
-
-
-# Correlations between human impact and market gravity
-ggplot(data, aes(x=region_human_impact_score_2013, y=cell_human_impact)) +geom_point() +geom_smooth(method="lm")
-# correlated
-
-
-ggplot(data, aes(x=log(cell_market_gravity+1), y=cell_human_impact)) +geom_point() +geom_smooth()
-# correlated
-
-
-ggplot(data, aes(x=log(cell_market_gravity+1), y=cell_human_impact)) +geom_point() +geom_smooth()
-
-# Pretty correlated
-ggplot(data, aes(x=human.impact.local, y=human.impact.reefs.top3)) +geom_point() +geom_smooth()
-
-```
-"cell_market_gravity", "cell_human_impact"
 
 ### Coral
 ```{r}
@@ -531,10 +494,8 @@ coral_duration_mod <- rma.mv(yi, vi, mods= ~ study_duration_mm,
                         random = ~ 1 | paper/esid, 
                         data = coral_effect_size, slab = paper)
 summary(coral_duration_mod) # not significant
-
-
-
 ```
+
 
 ### Algae
 ```{r}
@@ -612,8 +573,6 @@ turf_duration_mod <- rma.mv(yi, vi, mods= ~ study_duration_mm,
                         random = ~ 1 | paper/esid, 
                         data = turf_effect_size, slab = paper)
 summary(turf_duration_mod) # not significant
-
-
 ```
 
 
@@ -656,6 +615,7 @@ CCA_duration_mod <- rma.mv(yi, vi, mods= ~ study_duration_mm,
                         data = CCA_effect_size, slab = paper)
 summary(CCA_duration_mod) # not significant
 ```
+
 
 ### Invertebrates
 ```{r}

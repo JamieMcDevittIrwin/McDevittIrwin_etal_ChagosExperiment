@@ -170,8 +170,6 @@ broad.cover_long <- broad.cover_wide %>%
                names_to = "Category",
                values_to = "Count")
 ```
-Added in unknown and sediment to the broad categories. and bare tile.
 
-Looks good! 17April2023
 
 

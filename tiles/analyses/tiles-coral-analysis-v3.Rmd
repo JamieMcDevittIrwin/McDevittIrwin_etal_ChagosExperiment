@@ -7,11 +7,6 @@ output: html_document
 
 Dependancy: tiles-corals-data-cleaning.Rmd
 
-v3: now cover&coral has the fish and fish grazing models, this only has coral models and effect sizes
-
-**Final Dataframes**
-corals.2021_wide
-corals.2021_long
 
 # Packages
 ```{r}
@@ -181,7 +176,7 @@ corals.2021_wide$Site <- as.factor(corals.2021_wide$Site)
 
 
 #### Initial Models ####
-m1 <- glmmTMB(All.Corals ~ Treatment + (1|Site) + (1|Tile), zi = ~ 0, data = corals.2021_wide, family = poisson)
+m1 <- glmmTMB::glmmTMB(All.Corals ~ Treatment + (1|Site) + (1|Tile), zi = ~ 0, data = corals.2021_wide, family = poisson)
 
 m2 <- glmmTMB(All.Corals ~ Treatment + (1|Site) + (1|Tile), zi = ~ 1, data = corals.2021_wide, family = poisson)
 
@@ -536,4 +531,4 @@ save(p_tiles.effectsize, file="../data/coral-effect-size.RData")
 ```
 
 
-Looks good! 11April2023
+

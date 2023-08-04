@@ -441,6 +441,6 @@ p_mixed.model
 
 ggsave(p_mixed.model, file= "../figures/mixed-model-results-ggemmeans-grazing.png", width=10, height=6)
 ```
-Looks good! april 18 2023!
+
 
 
