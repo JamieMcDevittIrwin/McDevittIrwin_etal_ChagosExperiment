@@ -27,8 +27,8 @@ maxN_data <- read.csv(file='../data/raw/maxN_Chagos_201903.csv', header=TRUE, se
 # shark species summary data: has all the drops 
 spsum_data <- read.csv(file='../data/raw/species_summary_Chagos_201903.csv', header=TRUE, sep=",")
 
-# shark length data
-lengths_data <- read.csv(file='../data/raw/lengths_Chagos_201903.csv', header=TRUE, sep=",")
+# shark length data (updated)
+lengths_data <- read.csv(file='../data/raw/BIOT_7097_UpdatedSharkLengthMeasurements_Dec2019.csv', header=TRUE, sep=",")
 ```
 
 
