@@ -55,6 +55,24 @@ unique(bruvs.wide_tiles$OpCode) # 70 independent drops!
 
 ```
 
+
+
+```{r}
+lengths_data
+
+# Filter out drops at only near the tiles sites 
+dim(lengths_data) # 305 28
+lengths_data_tiles <- lengths_data %>% 
+  # get rid of PB sites away from our tiles
+  filter(!Island %in% c("North of Petite Ile Coquillage", "South of Ile Yeye")) %>%
+  # get rid of Eagle
+  filter(Region != "Eagle Island")
+dim(lengths_data_tiles) # 245 28
+
+```
+
+
+
 # Plots
 ```{r}
 # Region X Species
@@ -146,6 +164,29 @@ p_sharksXregion_tiles_species
 ggsave(p_sharksXregion_tiles_species ,
        file="../figures/sharks-region-species-maxn-tiles.png",
        width=10)
+```
+
+Plots of lengths
+```{r}
+
+# Sharks by Region
+lengths_data_tiles$Region <- factor(lengths_data_tiles$Region, levels = c("Brothers", "Nelson's Island", "PerosBanhos", "Salomon", "Egmont" ))
+
+
+lengths_data_tiles %>%
+  ggplot(aes(x=Region, y=Length..mm.)) + 
+  facet_wrap(~ Species, scales="free_y")+
+  geom_boxplot()+
+  theme_pubr(base_size=14)
+
+# removing outliers
+lengths_data_tiles %>%
+  filter(Species == "amblyrhynchos") %>%
+  ggplot(aes(x=Region, y=Length..mm.)) + 
+  geom_boxplot()+
+  ylim(0,1500)+
+  theme_pubr()
+
 ```
 
 
