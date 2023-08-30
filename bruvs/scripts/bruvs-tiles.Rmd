@@ -167,17 +167,27 @@ ggsave(p_sharksXregion_tiles_species ,
 ```
 
 Plots of lengths
+
+- no data for length of blacktip sharks from brothers? 
+- but there are two blacktip sharks recorded in the bruvs (but maybe they couldn't be measured?)
 ```{r}
 
 # Sharks by Region
 lengths_data_tiles$Region <- factor(lengths_data_tiles$Region, levels = c("Brothers", "Nelson's Island", "PerosBanhos", "Salomon", "Egmont" ))
 
 
-lengths_data_tiles %>%
+p_shark_lengths <- lengths_data_tiles %>%
   ggplot(aes(x=Region, y=Length..mm.)) + 
   facet_wrap(~ Species, scales="free_y")+
   geom_boxplot()+
-  theme_pubr(base_size=14)
+  theme_pubr(base_size=14)+
+  labs(y= "Length (mm)", x="")+
+  scale_x_discrete(guide = guide_axis(angle = 60))
+p_shark_lengths
+
+ggsave(p_shark_lengths,
+       file="../figures/sharks-lengths.png",
+       width=10, height=8)
 
 # removing outliers
 lengths_data_tiles %>%
@@ -186,6 +196,11 @@ lengths_data_tiles %>%
   geom_boxplot()+
   ylim(0,1500)+
   theme_pubr()
+
+lengths_data_tiles %>%
+  filter(Species == "amblyrhynchos") %>%
+  summarize(mean= mean(Length..mm.))
+# 942.5383
 
 ```
 
