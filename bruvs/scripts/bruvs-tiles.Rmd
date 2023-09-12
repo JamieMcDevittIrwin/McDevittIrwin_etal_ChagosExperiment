@@ -199,7 +199,8 @@ lengths_data_tiles %>%
 
 lengths_data_tiles %>%
   filter(Species == "amblyrhynchos") %>%
-  summarize(mean= mean(Length..mm.))
+  summarize(mean= mean(Length..mm.),
+            sd=sd(Length..mm.))
 # 942.5383
 
 ```
