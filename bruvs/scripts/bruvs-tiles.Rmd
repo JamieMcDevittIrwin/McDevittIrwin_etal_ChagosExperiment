@@ -169,7 +169,7 @@ ggsave(p_sharksXregion_tiles_species ,
 Plots of lengths
 
 - no data for length of blacktip sharks from brothers? 
-- but there are two blacktip sharks recorded in the bruvs (but maybe they couldn't be measured?)
+- but there are two blacktip sharks recorded in the bruvs (likely they couldn't be measured?)
 ```{r}
 
 # Sharks by Region

@@ -1,5 +1,0 @@
-"0",""
-"0",""
-"0","ggsave(model_fish.predictions, file=""../figures/model-fishes-predictions.png"","
-"0","       height=13, width=7)"
-"0",""

@@ -1,4 +1,0 @@
-"0","ggsave(p_herbs_relabundance, height=8, width=8 file=""../figures/herbivores-relative-abundance.png"")
-"
-"2","Error: unexpected symbol in ""ggsave(p_herbs_relabundance, height=8, width=8 file""
-"

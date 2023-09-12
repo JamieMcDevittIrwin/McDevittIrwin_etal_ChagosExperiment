@@ -1,6 +1,6 @@
 # Combine all figures
 
-library(ggpubr)
+library(ggplot2);library(ggpubr)
 
 load("../bruvs/data/sharkabundance-region-tiles.RData") #p_sharksXregion_tiles
 load("../dovs/data/tiles-chaetodontidae.RData") #p_tiles.chaet

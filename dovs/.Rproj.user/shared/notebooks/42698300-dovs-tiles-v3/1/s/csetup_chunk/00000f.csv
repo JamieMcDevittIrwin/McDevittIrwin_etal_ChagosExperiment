@@ -1,2 +1,84 @@
 "0","knitr::opts_chunk$set(echo = FALSE)"
 "0","library(tidyverse);library(ggpubr);library(reshape2);library(stringr);library(vegan);library(plotly);library(linguisticsdown);library(lme4);library(indicspecies);library(janitor);library(ade4);library(picante);library(FD);library(mvabund);library(cowplot);library(glmmTMB);library(ggeffects)"
+"2","Registered S3 method overwritten by 'data.table':
+  method           from
+  print.data.table     
+"
+"2","Registered S3 method overwritten by 'htmlwidgets':
+  method           from         
+  print.htmlwidget tools:rstudio
+"
+"2","
+Attaching package: ‘plotly’
+
+"
+"2","The following object is masked from ‘package:ggplot2’:
+
+    last_plot
+
+"
+"2","The following object is masked from ‘package:stats’:
+
+    filter
+
+"
+"2","The following object is masked from ‘package:graphics’:
+
+    layout
+
+"
+"2","Loading required package: ape
+"
+"2","
+Attaching package: ‘ape’
+
+"
+"2","The following object is masked from ‘package:ggpubr’:
+
+    rotate
+
+"
+"2","Loading required package: nlme
+"
+"2","
+Attaching package: ‘nlme’
+
+"
+"2","The following object is masked from ‘package:lme4’:
+
+    lmList
+
+"
+"2","The following object is masked from ‘package:dplyr’:
+
+    collapse
+
+"
+"2","Loading required package: geometry
+"
+"2","
+Attaching package: ‘cowplot’
+
+"
+"2","The following object is masked from ‘package:ggpubr’:
+
+    get_legend
+
+"
+"2","Warning: Package version inconsistency detected.
+TMB was built with Matrix version 1.5.4.1
+Current Matrix version is 1.6.0
+Please re-install 'TMB' from source using install.packages('TMB', type = 'source') or ask CRAN for a binary version of 'TMB' matching CRAN's 'Matrix' package"
+"2","Warning: Package version inconsistency detected.
+glmmTMB was built with TMB version 1.9.3
+Current TMB version is 1.9.5
+Please re-install glmmTMB from source or restore original ‘TMB’ package (see '?reinstalling' for more information)"
+"2","
+Attaching package: ‘ggeffects’
+
+"
+"2","The following object is masked from ‘package:cowplot’:
+
+    get_title
+
+"
