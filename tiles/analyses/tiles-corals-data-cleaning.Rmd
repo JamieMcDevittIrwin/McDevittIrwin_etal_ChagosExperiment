@@ -149,6 +149,21 @@ corals.2021_wide %>%
 # Caged	0.5760870		
 # Partial	0.9687500		
 # Uncaged	0.5393258	
+
+corals.2021_wide %>%
+  group_by(Treatment) %>%
+  summarize(mean.corals = mean(Top,
+            sd=sd(Top)))
+
+corals.2021_wide %>%
+  group_by(Treatment) %>%
+  summarize(mean.corals = mean(Side,
+            sd=sd(Side)))
+
+corals.2021_wide %>%
+  group_by(Treatment) %>%
+  summarize(mean.corals = mean(Bottom,
+            sd=sd(Bottom)))
 ```
 
 
