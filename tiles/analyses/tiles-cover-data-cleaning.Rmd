@@ -5,6 +5,10 @@ date: '2022-12-13'
 output: html_document
 ---
 
+
+03/2024 there was an issue with some of the colnames getting filtered out? seems fixed now? 
+
+
 # Packages
 ```{r}
 library(tidyverse)
@@ -106,8 +110,9 @@ cover.df1 <- data.metadata.clean  %>%
 
 
 # Normalize by number of points
+colnames(cover.df1)
 cover.df2 <- cover.df1 %>%
-  dplyr::select(c(`_CCA`:"GREEN9")) 
+  dplyr::select(c(`*TURF`:"GREEN9")) 
 rowSums(cover.df2 ) # almost none equal 200 but all close (this is after non-biological is filtered out)
 
 cover.df3 <- decostand(cover.df2, "total") 
@@ -122,7 +127,7 @@ metadata <- cover.df1 %>%
 cover_wide <- cover.df3 %>%
   rownames_to_column("Tile.Treatment") %>%
   left_join(metadata, by="Tile.Treatment") %>%
-  dplyr::select(c(Tile.Treatment, Name:bites.per.min.mean,`_CCA`:"GREEN9"))
+  dplyr::select(c(Tile.Treatment, Name:bites.per.min.mean,`*TURF`:"GREEN9"))
 # we had filtered out tile 14 uncaged, but it is already gone from coralnet (talked to mica about it) because it was upside down
 
 cover_data <- cover.df3

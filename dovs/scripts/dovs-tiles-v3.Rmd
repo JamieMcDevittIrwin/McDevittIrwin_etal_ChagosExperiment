@@ -414,6 +414,8 @@ m2 <- glmmTMB(Herbivores ~ Shark_Sum_Abundance + Mesopredators + (1|OpCode_Site)
 AIC(m1)
 AIC(m2) # only one that works
 
+summary(m2)
+
 summary(m2) # not significant
 performance::r2(m2)
 # Conditional R2: 0.629

@@ -95,12 +95,16 @@ sig.spp.scrs
 plot <- gg_ordiplot(data.mds, 
                     groups= broad.cover_wide$Treatment, 
                     hull=FALSE, ellipse=TRUE, spiders=FALSE,
-                    kind="sd", pt.size=4) 
+                    kind="sd", pt.size=1) 
 plot
+# we made the point size smaller for revisions
+
 
 
 # refine the plot (you can pull out "plot" from the gg_ordiplot call)
 p_nmds.broad <- plot$plot + 
+  # add group centroids for revisions
+  geom_point(data = plot$df_mean.ord, size = 5, aes(x = x, y = y, colour = Group))+
   theme_bw()+ 
   theme(panel.grid.major = element_blank(), 
         panel.grid.minor = element_blank(),
@@ -111,14 +115,12 @@ p_nmds.broad <- plot$plot +
                arrow = arrow(length = unit(0.25, "cm")), colour = "grey10", lwd=0.3)+ #add vector arrows of significant species
   ggrepel::geom_text_repel(data = sig.spp.scrs, 
                            aes(x=NMDS1, y=NMDS2, label = Species), 
-                           cex = 4, direction = "both", segment.size = 0.25)+ 
-    scale_colour_hue(h = c(180, 300)) + #add labels for species, use ggrepel::geom_text_repel so that labels do not overlap
+                           cex = 4, direction = "both", segment.size = 0.25)+ scale_colour_hue(h = c(180, 300)) + #add labels for species, use ggrepel::geom_text_repel so that labels do not overlap
  #annotate(geom="text", label="a)", y=1.5, x=-1.1, size=6)
   ggtitle("a)") +
-  theme(legend.position="bottom")
+  theme(legend.position="bottom") 
 
 p_nmds.broad
-
 
 
 ggsave(file= "../figures/nmds-broad-categories.png",
@@ -134,6 +136,7 @@ p_fig4 <- ggarrange(p_nmds.broad, p_relabund_treatment)
 p_fig4
 ggsave(p_fig4, file="../figures/nmds-barplot.png",
        height=7,width=11)
+
 ```
  
  

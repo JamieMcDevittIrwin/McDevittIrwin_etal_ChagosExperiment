@@ -38,6 +38,11 @@ Attaching package: ‘ape’
     rotate
 
 "
+"2","The following object is masked from ‘package:dplyr’:
+
+    where
+
+"
 "2","Loading required package: nlme
 "
 "2","
@@ -65,14 +70,15 @@ Attaching package: ‘cowplot’
     get_legend
 
 "
+"2","The following object is masked from ‘package:lubridate’:
+
+    stamp
+
+"
 "2","Warning: Package version inconsistency detected.
 TMB was built with Matrix version 1.5.4.1
-Current Matrix version is 1.6.0
+Current Matrix version is 1.6.1.1
 Please re-install 'TMB' from source using install.packages('TMB', type = 'source') or ask CRAN for a binary version of 'TMB' matching CRAN's 'Matrix' package"
-"2","Warning: Package version inconsistency detected.
-glmmTMB was built with TMB version 1.9.3
-Current TMB version is 1.9.5
-Please re-install glmmTMB from source or restore original ‘TMB’ package (see '?reinstalling' for more information)"
 "2","
 Attaching package: ‘ggeffects’
 
