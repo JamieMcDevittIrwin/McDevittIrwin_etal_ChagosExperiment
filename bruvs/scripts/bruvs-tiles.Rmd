@@ -85,7 +85,8 @@ p_sharks_species_region <- bruvs.long_tiles %>%
   ggplot(aes(reorder(Region, mean_maxN), mean_maxN, fill= Species)) +
   geom_bar(stat= 'identity', position="fill") + 
   theme_pubr() +  labs(x= "", y="Relative Abundance")+
-  scale_x_discrete(guide = guide_axis(angle = 60))
+  scale_x_discrete(guide = guide_axis(angle = 60))+ 
+  scale_fill_discrete(name = "Species", labels = c("C. amblyrhynchos", "N. ferrugineus", "C. melanopterus", "T. obesus"))
 p_sharks_species_region 
 
 ggsave("../figures/sharkabundance-region-species.png", 
@@ -133,7 +134,9 @@ p_sharks_species_region_tiles <- bruvs.long_tiles %>%
   geom_bar(stat= 'identity') + 
   theme_pubr() +
   ggtitle("\n\nSum of mean maxN across species") + 
-  labs(x= "Region", y="Sum of mean maxN (+/- SE)")
+  labs(x= "Region", y="Sum of mean maxN (+/- SE)")+ 
+  scale_fill_discrete(name = "Species", labels = c("C. amblyrhynchos", "N. ferrugineus", "C. melanopterus", "T. obesus"))
+
 p_sharks_species_region_tiles
 
 ggsave("../figures/sharkabundance-region-species.pdf", 
@@ -170,15 +173,22 @@ Plots of lengths
 
 - no data for length of blacktip sharks from brothers? 
 - but there are two blacktip sharks recorded in the bruvs (likely they couldn't be measured?)
+
+Revisions: adding genus to species facet
 ```{r}
 
 # Sharks by Region
 lengths_data_tiles$Region <- factor(lengths_data_tiles$Region, levels = c("Brothers", "Nelson's Island", "PerosBanhos", "Salomon", "Egmont" ))
 
+# New facet label names for dose variable
+new.labs <- c("C. amblyrhynchos", "N. ferrugineus", "C. melanopterus", "T. obesus")
+names(new.labs) <- c("amblyrhynchos", "ferrugineus", "melanopterus","obesus")
+
 
 p_shark_lengths <- lengths_data_tiles %>%
   ggplot(aes(x=Region, y=Length..mm.)) + 
-  facet_wrap(~ Species, scales="free_y")+
+  facet_wrap(~ Species, scales="free_y",
+             labeller = labeller(Species= new.labs))+
   geom_boxplot()+
   theme_pubr(base_size=14)+
   labs(y= "Length (mm)", x="")+

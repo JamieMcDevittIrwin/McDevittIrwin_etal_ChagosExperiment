@@ -104,7 +104,7 @@ dovs.wide.tiles.family <- dovs.wide.family %>%
   relocate(Tile.Site, .after= Site)
 
 dim(dovs.wide.tiles.family) # 31 17
-
+colnames(dovs.wide.tiles.family)
 
 
 
@@ -130,7 +130,7 @@ Summaries
 ```{r}
 
 unique(dovs.long.tiles$Full.Species.Name) # 174
-dim(dovs.wide.tiles.family) # 31 17
+dim(dovs.wide.tiles.family) # 31 17 (now 31 by 18 )
 ```
 
 
@@ -155,8 +155,8 @@ p_herbs_relabundance <- dovs.long.tiles %>%
   theme_pubr()+
   labs(x="", y="Relative Abundance") +
   scale_x_discrete(guide = guide_axis(angle = 60),
-                   labels=c("Il Lubine" = "Ile Lubine",
-                            "Il de rats" = "Ile de rats"))
+                   labels=c("Il Lubine" = "Egmont- Ile Lubine",
+                            "Il de rats" = "Egmont- Ile de rats"))
 p_herbs_relabundance
 
 ggsave(p_herbs_relabundance, height=8, width=8, file="../figures/herbivores-relative-abundance.png")
@@ -171,8 +171,8 @@ p_meso_relabundance <- dovs.long.tiles %>%
   theme_pubr()+
   labs(x="", y="Relative Abundance") +
   scale_x_discrete(guide = guide_axis(angle = 60),
-                   labels=c("Il Lubine" = "Ile Lubine",
-                            "Il de rats" = "Ile de rats"))
+                   labels=c("Il Lubine" = "Egmont- Ile Lubine",
+                            "Il de rats" = "Egmont- Ile de rats"))
 p_meso_relabundance
 
 ggsave(p_meso_relabundance, file="../figures/mesopredator-relative-abundance.png",

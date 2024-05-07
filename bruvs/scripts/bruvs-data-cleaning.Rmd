@@ -65,7 +65,7 @@ sum(maxN_data$MaxN) #405
 # Create a wide DF
 # Get NAn values for every species that was not recorded at a drop, this creates a wide site by species matrix
 bruvs.wide.df1 <- maxN_complete %>%
-  pivot_wider(id_col= OpCode, names_from= Species, values_from= MaxN) %>%
+  pivot_wider(id_cols= OpCode, names_from= Species, values_from= MaxN) %>%
   dplyr::select(-"NA") %>% # get rid of the NA column created from the zero six op codes
   dplyr::select(-"albimarginatus") # get rid of silvertip
 
