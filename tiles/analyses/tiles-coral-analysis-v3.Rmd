@@ -155,6 +155,9 @@ corals.2021 %>% ggplot(aes(x= Treatment, fill=Coral_size_bin)) +
 ```
 Not really a difference in size between treatments! (a few corals dont have size here though)
 
+
+
+
 Final coral recruit plots
 - decided to plot these with raw data instead of lsmeans because of some confusion when people looked at the means
 ```{r}
@@ -171,7 +174,7 @@ p_corals_overall <- ggplot(meancorals.overall, aes(x=Treatment, y=mean, col=Trea
   theme_pubr(base_size=16) +
   theme(axis.text.x = element_blank(),
         legend.position="none") +
-  labs(y="", x="") + 
+  labs(y="Coral Recruitment (+/- SE)", x="") + 
   ggtitle("a) Overall")+ 
     scale_colour_hue(h = c(180, 300))
 p_corals_overall
@@ -292,6 +295,9 @@ performance::r2(m2)
 #      Marginal R2: 0.023
 # Had to decrease the random effects structure to get an R2 value for conditional
 
+testDispersion(m2) # not sig, close to 1
+
+
 car::Anova(m2, type=2) # not significant
 #            Chisq Df Pr(>Chisq)
 # Treatment 3.5915  2      0.166
@@ -345,6 +351,8 @@ performance::r2(m1)
 # 
 #   Conditional R2: 0.572
 #      Marginal R2: 0.209
+
+testDispersion(m1) # not sig, close to 1
 
 car::Anova(m1, type=2) 
 # Analysis of Deviance Table (Type II Wald chisquare tests)
@@ -408,6 +416,9 @@ performance::r2(m6)
  # Conditional R2: 0.354
  #     Marginal R2: 0.066
 
+testDispersion(m6) # not sig, close to 1
+
+
 car::Anova(m6, type=2)
 # Response: Coral
 #           Chisq Df Pr(>Chisq)  
@@ -451,11 +462,12 @@ m7 <- glmmTMB(Side ~ Treatment + (1|Tile), zi = ~ 0, data = corals.2021_wide, fa
 m8 <- glmmTMB(Side ~ Treatment + (1|Tile), zi = ~ 1, data = corals.2021_wide, family = nbinom2())
 # convergence issue
 
-AIC(m5,m6,m7,m8) # m7 is barely better? but it doesn't give you an R2 for random effects, so we go with m4 since its simpler and close in AIC
+AIC(m5,m6,m7,m8) # m7 is barely better? but it doesn't give you an R2 for random effects, so we go with m5 since its simpler and close in AIC
 
 
 summary(m7)
 summary(m5)
+
 performance::r2(m7) # random effects errors --> singular 
 performance::r2(m5)
 # Conditional R2: 0.370
@@ -467,6 +479,9 @@ summary(m5)
 performance::r2(m5)
 # Conditional R2: 0.370
 #      Marginal R2: 0.012
+
+
+testDispersion(m5) # not sig, close to 1
 
 # Model Diagnostics
 m5_simresids <- simulateResiduals(m5)

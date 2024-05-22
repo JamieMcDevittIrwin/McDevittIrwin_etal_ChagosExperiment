@@ -201,7 +201,7 @@ AIC(m2) # best (barely)
 AIC(m3)
 AIC(m4)
 
-summary(m2)
+summary(m2) # zero inflation ~1
 car::Anova(m2, type=3) # treatment, chaetodontidae, almost treatment*chaetodontidae
 
 
@@ -210,6 +210,7 @@ performance::r2(m2)
 # Conditional R2: 0.486
 #      Marginal R2: 0.209
 
+testDispersion(m2) # not sig, around 1
 
 # Check residuals
 simres <- simulateResiduals(m2)
@@ -360,6 +361,9 @@ performance::r2(m2)
 # warning about random effects 
 # Conditional R2: 0.410
 #      Marginal R2: 0.064
+
+testDispersion(m2) # not sig, close to 1
+
 
 
 # Check residuals

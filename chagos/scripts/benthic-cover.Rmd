@@ -136,7 +136,7 @@ p_benthic.cover <- benthic_long %>%
   summarize(mean=mean(value))%>% # this gets rid of the white lines (same plot without it)
   ggplot(aes(x = Site, y = mean, fill = Label)) + 
   geom_bar(position = "fill", stat = "identity") +
-  labs(x = "Site", y = "Percent Cover", fill = "Label") +
+  labs(x = "Site", y = "Relative Abundance", fill = "Label") +
 theme_pubr(base_size=16) +
   scale_fill_manual(values = c("CCA" = "#e67388",
                                          "Macroalgae" = "#30802f",
