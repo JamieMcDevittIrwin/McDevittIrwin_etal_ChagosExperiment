@@ -247,7 +247,7 @@ ggplot(model_data, aes(x=Herbivores.avg, y=Coral)) + geom_point() + geom_smooth(
 
 # Coral and herbivores
 coral_mod <- lmerTest::lmer(Coral ~ Herbivores.avg + (1|Atoll) , data= model_data)
-summary(coral_mod)
+summary(coral_mod)        
 performance::r2(coral_mod)
 
 
@@ -256,12 +256,12 @@ library(DHARMa)
 simres <- simulateResiduals(coral_mod)
 plot(simres) # issues
 
-plot(coral_mod, type=c("p","smooth"), col.line=1) # residuals vs fitted (with line), seems mainly linear (this looks at linearity)
-qqnorm(residuals(coral_mod)) # are the residuals normally distributed (meh-ish)
+plot(coral_mod, type=c("p","smooth"), col.line=1) # residuals vs fitted (with line), seems mainly linear (this looks at linearity which is most important)
+qqnorm(residuals(coral_mod)) # are the residuals normally distributed (meh-ish) but also this isn't that important
 qqline(residuals(coral_mod))
 plot(coral_mod,
      sqrt(abs(resid(.)))~fitted(.),
-     type=c("p","smooth"), col.line=1) # scale location plot (homoskedasticity), not great
+     type=c("p","smooth"), col.line=1) # scale location plot (homoskedasticity), seems ok but not great
 
 # So lets use robust standard errors that help deal with heteroskedasticity
 
@@ -369,13 +369,8 @@ algae_mod_graze_lm <- lm(Macroalgae ~ bites.per.min.grazeable.mean, data= grazin
 summary(algae_mod_graze_lm) # higher herbivores bites is related to higher algae percent cover
 
 # Model Diagnostics
-plot(algae_mod_graze_lm) # seems ok
+plot(algae_mod_graze_lm) # seems good
 
-
-# try robust standard errors
-library(sandwich)
-library(lmtest)
-coeftest(algae_mod_graze_lm, vcov = vcovHC(algae_mod_graze_lm, type = "HC0"))
 ```
 
 

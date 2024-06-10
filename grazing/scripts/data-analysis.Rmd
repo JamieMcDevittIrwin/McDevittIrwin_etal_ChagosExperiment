@@ -116,12 +116,12 @@ hist(herbivore.bites.shark.fish$bites.per.min.grazeable)
 library(glmmTMB)
 
 # Linear model
-m1 <- glmmTMB(bites.per.min.grazeable ~ Shark_Sum_Abundance + Mesopredators.avg, data=herbivore.bites.shark.fish, family = gaussian())
+#m1 <- glmmTMB(bites.per.min.grazeable ~ Shark_Sum_Abundance + Mesopredators.avg, data=herbivore.bites.shark.fish, family = gaussian())
+
+m1 <- lm(bites.per.min.grazeable ~ Shark_Sum_Abundance + Mesopredators.avg, data=herbivore.bites.shark.fish)
 
 summary(m1) # shark abundance is almost significant (0.06)
-performance::r2(m1)  
-#   Conditional R2: NA
- #    Marginal R2: 0.837
+
 
 # Model Fit
 library(DHARMa)
