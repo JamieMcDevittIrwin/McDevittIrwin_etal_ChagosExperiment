@@ -19,7 +19,7 @@ bruvs.long
 
 
 ```{r}
-library(dplyr);library(ggplot2);library(ggpubr);library(tidyr);library(car)
+library(dplyr);library(ggplot2);library(ggpubr);library(tidyr);library(car);library(lme4);library(glmmTMB);library(emmeans)
 ```
 
 
@@ -214,6 +214,48 @@ lengths_data_tiles %>%
 # 942.5383
 
 ```
+
+# Model
+Shows there is a significant difference in shark abundance across the atolls
+```{r}
+str(bruvs.wide_tiles)
+
+bruvs.wide_tiles$Island <- as.factor(bruvs.wide_tiles$Island)
+
+hist(bruvs.wide_tiles$All.Sharks) # doesn't seem zero inflated, so use normal poisson and nbinom for count data
+
+# Try out poisson and nbinom for count data 
+m1 <- glmmTMB(All.Sharks ~ Region + (1|Island), data=bruvs.wide_tiles, family = poisson)
+
+m2 <- glmmTMB(All.Sharks ~ Region + (1|Island), data=bruvs.wide_tiles, family = nbinom2())
+AIC(m1)
+AIC(m2) #this one is better
+
+summary(m2)
+performance::r2(m2)  
+#Warning: mu of 4.5 is too close to zero, estimate of random effect
+#  variances may be unreliable.# R2 for Mixed Models
+
+# Now try the model without the random effect
+m3 <- glmmTMB(All.Sharks ~ Region, data=bruvs.wide_tiles, family = nbinom2())
+summary(m3)
+
+performance::r2(m3)  
+# Conditional R2: NA
+#      Marginal R2: 0.120
+
+# Model Fit
+library(DHARMa)
+simres <- simulateResiduals(m3)
+plot(simres) # looks good!
+
+car::Anova(m3, type=2) # significant
+
+# Posthoc contrasts
+pairs(emmeans(m3, ~ Region))
+# egmont is significantly higher than brothers, nelsons and peros
+```
+
 
 
 # Mean of sum MaxN
